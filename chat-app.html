@@ -1,0 +1,1643 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>💬 Distributed Chat Application</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        /* ==================== LOGIN SCREEN ==================== */
+        .login-container {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 450px;
+            width: 100%;
+            animation: fadeIn 0.5s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .login-header h1 {
+            color: #667eea;
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .login-header p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .input-group {
+            margin: 20px 0;
+        }
+
+        .input-group label {
+            display: block;
+            color: #333;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 15px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .alert {
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            display: none;
+            animation: slideIn 0.3s;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(-100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .alert-error {
+            background: #ffebee;
+            color: #c62828;
+            border-left: 4px solid #c62828;
+        }
+
+        .alert-success {
+            background: #e8f5e9;
+            color: #2e7d32;
+            border-left: 4px solid #2e7d32;
+        }
+
+        .alert-info {
+            background: #e3f2fd;
+            color: #1565c0;
+            border-left: 4px solid #1565c0;
+        }
+
+        .otp-section {
+            display: none;
+        }
+
+        .resend-link {
+            text-align: center;
+            margin-top: 15px;
+        }
+
+        .resend-link button {
+            background: none;
+            border: none;
+            color: #667eea;
+            cursor: pointer;
+            text-decoration: underline;
+            font-size: 14px;
+        }
+
+        /* ==================== CHAT SCREEN ==================== */
+        .chat-container {
+            display: none;
+            background: white;
+            width: 95vw;
+            max-width: 1400px;
+            height: 90vh;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+            animation: fadeIn 0.5s;
+        }
+
+        .chat-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .chat-header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .chat-header h1 {
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .connection-status {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #4caf50;
+            animation: pulse 2s infinite;
+        }
+
+        .connection-status.offline {
+            background: #f44336;
+            animation: none;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: rgba(255,255,255,0.1);
+            padding: 10px 20px;
+            border-radius: 10px;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: white;
+            color: #667eea;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .logout-btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 2px solid white;
+            padding: 8px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: white;
+            color: #667eea;
+        }
+
+        .chat-body {
+            display: flex;
+            height: calc(100% - 80px);
+        }
+
+        /* ==================== SIDEBAR ==================== */
+        .sidebar {
+            width: 320px;
+            background: #f8f9fa;
+            border-right: 1px solid #e0e0e0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            background: white;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .sidebar-header h2 {
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .room-search {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .room-search:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .create-room-btn {
+            width: 100%;
+            padding: 12px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            margin-top: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .create-room-btn:hover {
+            background: #5568d3;
+        }
+
+        .rooms-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        .room-item {
+            padding: 15px;
+            background: white;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+
+        .room-item:hover {
+            background: #f0f0f0;
+            transform: translateX(5px);
+        }
+
+        .room-item.active {
+            background: #667eea;
+            color: white;
+            border-color: #5568d3;
+        }
+
+        .room-name {
+            font-weight: 600;
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+
+        .room-description {
+            font-size: 12px;
+            opacity: 0.7;
+        }
+
+        /* ==================== MAIN CHAT AREA ==================== */
+        .chat-main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #f5f5f5;
+        }
+
+        .chat-messages-header {
+            padding: 20px;
+            background: white;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .current-room-info h3 {
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .current-room-info p {
+            font-size: 13px;
+            color: #666;
+        }
+
+        .message-type-selector {
+            display: flex;
+            gap: 10px;
+        }
+
+        .type-btn {
+            padding: 8px 16px;
+            border: 2px solid #e0e0e0;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .type-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .type-btn:hover:not(.active) {
+            background: #f0f0f0;
+        }
+
+        .messages-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .message {
+            display: flex;
+            gap: 10px;
+            animation: messageSlideIn 0.3s;
+        }
+
+        @keyframes messageSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.own {
+            flex-direction: row-reverse;
+        }
+
+        .message-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #667eea;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        .message.own .message-avatar {
+            background: #764ba2;
+        }
+
+        .message-content {
+            max-width: 60%;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .message-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 12px;
+        }
+
+        .message.own .message-header {
+            flex-direction: row-reverse;
+        }
+
+        .message-sender {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .message-time {
+            color: #999;
+        }
+
+        .message-type-badge {
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .badge-unicast {
+            background: #e3f2fd;
+            color: #1565c0;
+        }
+
+        .badge-multicast {
+            background: #f3e5f5;
+            color: #7b1fa2;
+        }
+
+        .badge-broadcast {
+            background: #fff3e0;
+            color: #e65100;
+        }
+
+        .message-bubble {
+            background: white;
+            padding: 12px 16px;
+            border-radius: 12px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            word-wrap: break-word;
+        }
+
+        .message.own .message-bubble {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .delete-msg-btn {
+            background: #f44336;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: 8px;
+            transition: all 0.3s;
+        }
+
+        .delete-msg-btn:hover {
+            background: #d32f2f;
+            transform: scale(1.1);
+        }
+
+        /* ==================== MESSAGE INPUT ==================== */
+        .message-input-area {
+            padding: 20px;
+            background: white;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .target-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .target-selector input {
+            flex: 1;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .target-selector input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .message-input-container {
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+        }
+
+        .message-input {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 15px;
+            font-family: inherit;
+            resize: none;
+            max-height: 120px;
+            min-height: 50px;
+        }
+
+        .message-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .send-btn {
+            padding: 15px 30px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 15px;
+            transition: all 0.3s;
+        }
+
+        .send-btn:hover:not(:disabled) {
+            background: #5568d3;
+            transform: translateY(-2px);
+        }
+
+        .send-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        /* ==================== MODAL ==================== */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 500px;
+            width: 90%;
+            animation: fadeIn 0.3s;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-header h2 {
+            color: #333;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #999;
+        }
+
+        .close-modal:hover {
+            color: #333;
+        }
+
+        /* ==================== RESPONSIVE ==================== */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                display: none;
+            }
+
+            .sidebar.mobile-show {
+                display: flex;
+                position: absolute;
+                height: 100%;
+                z-index: 100;
+            }
+
+            .message-content {
+                max-width: 80%;
+            }
+        }
+
+        /* ==================== SCROLLBAR ==================== */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #999;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        .empty-state-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ==================== LOGIN SCREEN ==================== -->
+    <div class="login-container" id="loginScreen">
+        <div class="login-header">
+            <h1>💬 Welcome</h1>
+            <p>Enter your phone number to get started</p>
+        </div>
+
+        <!-- Phone Number Section -->
+        <div id="phoneSection">
+            <div class="input-group">
+                <label for="phoneNumber">📱 Phone Number</label>
+                <input 
+                    type="tel" 
+                    id="phoneNumber" 
+                    placeholder="+919876543210" 
+                    maxlength="13"
+                />
+            </div>
+
+            <div class="input-group">
+                <label for="username">👤 Your Name</label>
+                <input 
+                    type="text" 
+                    id="username" 
+                    placeholder="Enter your name"
+                />
+            </div>
+
+            <button class="btn btn-primary" id="sendOtpBtn" onclick="sendOTP()">
+                Send OTP
+            </button>
+        </div>
+
+        <!-- OTP Verification Section -->
+        <div class="otp-section" id="otpSection">
+            <div class="input-group">
+                <label for="otpCode">🔐 Enter OTP</label>
+                <input 
+                    type="text" 
+                    id="otpCode" 
+                    placeholder="Enter 6-digit OTP" 
+                    maxlength="6"
+                />
+            </div>
+
+            <button class="btn btn-primary" id="verifyOtpBtn" onclick="verifyOTP()">
+                Verify & Login
+            </button>
+
+            <div class="resend-link">
+                <button onclick="sendOTP()">Resend OTP</button>
+            </div>
+        </div>
+
+        <!-- Alert Messages -->
+        <div class="alert alert-error" id="errorAlert"></div>
+        <div class="alert alert-success" id="successAlert"></div>
+        <div class="alert alert-info" id="infoAlert"></div>
+    </div>
+
+    <!-- ==================== CHAT SCREEN ==================== -->
+    <div class="chat-container" id="chatScreen">
+        <!-- Chat Header -->
+        <div class="chat-header">
+            <div class="chat-header-left">
+                <h1>
+                    <span class="connection-status" id="connectionStatus"></span>
+                    Distributed Chat
+                </h1>
+            </div>
+            <div class="user-info">
+                <div class="user-avatar" id="userAvatar">U</div>
+                <div>
+                    <div id="currentUsername" style="font-weight: 600;">User</div>
+                    <div id="currentPhone" style="font-size: 12px; opacity: 0.8;">+91XXXXXXXXXX</div>
+                </div>
+                <button class="logout-btn" onclick="logout()">Logout</button>
+            </div>
+        </div>
+
+        <div class="chat-body">
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <div class="sidebar-header">
+                    <h2>💬 Chat Rooms</h2>
+                    <input type="text" class="room-search" placeholder="Search rooms..." id="roomSearch" onkeyup="filterRooms()">
+                    <button class="create-room-btn" onclick="showCreateRoomModal()">+ Create Room</button>
+                </div>
+                <div class="rooms-list" id="roomsList">
+                    <div class="loading">Loading rooms...</div>
+                </div>
+            </div>
+
+            <!-- Main Chat Area -->
+            <div class="chat-main">
+                <div class="chat-messages-header">
+                    <div class="current-room-info">
+                        <h3 id="currentRoomName">Select a room</h3>
+                        <p id="currentRoomDesc">Choose a room from the sidebar to start chatting</p>
+                    </div>
+                    <div class="message-type-selector">
+                        <button class="type-btn active" data-type="MULTICAST" onclick="selectMessageType('MULTICAST')">
+                            💬 Room Chat
+                        </button>
+                        <button class="type-btn" data-type="UNICAST" onclick="selectMessageType('UNICAST')">
+                            👤 Direct
+                        </button>
+                        <button class="type-btn" data-type="BROADCAST" onclick="selectMessageType('BROADCAST')">
+                            📢 Broadcast
+                        </button>
+                    </div>
+                </div>
+
+                <div class="messages-container" id="messagesContainer">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">💬</div>
+                        <h3>No messages yet</h3>
+                        <p>Start a conversation by sending a message</p>
+                    </div>
+                </div>
+
+                <div class="message-input-area">
+                    <div class="target-selector" id="targetSelector" style="display: none;">
+                        <input 
+                            type="text" 
+                            id="targetInput" 
+                            placeholder="Enter phone number (e.g., +919876543210)"
+                        />
+                    </div>
+                    <div class="message-input-container">
+                        <textarea 
+                            class="message-input" 
+                            id="messageInput" 
+                            placeholder="Type your message..."
+                            onkeypress="handleMessageKeyPress(event)"
+                        ></textarea>
+                        <button class="send-btn" id="sendMessageBtn" onclick="sendMessage()">
+                            Send 📤
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== CREATE ROOM MODAL ==================== -->
+    <div class="modal" id="createRoomModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Create New Room</h2>
+                <button class="close-modal" onclick="closeCreateRoomModal()">×</button>
+            </div>
+            <div class="input-group">
+                <label>Room Name</label>
+                <input type="text" id="newRoomName" placeholder="e.g., General Chat">
+            </div>
+            <div class="input-group">
+                <label>Description</label>
+                <input type="text" id="newRoomDesc" placeholder="What's this room about?">
+            </div>
+            <button class="btn btn-primary" onclick="createRoom()">Create Room</button>
+        </div>
+    </div>
+
+    <script>
+        // ==================== GLOBAL VARIABLES ====================
+        const API_BASE = 'http://localhost:8080/api';
+        const WS_BASE = 'ws://localhost:8080/ws/chat';
+        
+        let currentUser = {
+            phone: '',
+            username: '',
+            userId: ''
+        };
+        
+        let currentRoom = null;
+        let currentMessageType = 'MULTICAST';
+        let selectedContact = null; // For UNICAST
+        let websocket = null;
+        let rooms = [];
+        let directConversations = new Map(); // Map of phone -> {phone, name, lastMessage, unread}
+        let allMessages = []; // Store all messages for filtering
+
+        // ==================== UTILITY FUNCTIONS ====================
+        function showAlert(message, type = 'error') {
+            const alertId = type + 'Alert';
+            const alert = document.getElementById(alertId);
+            alert.textContent = message;
+            alert.style.display = 'block';
+            setTimeout(() => {
+                alert.style.display = 'none';
+            }, 5000);
+        }
+
+        function hideAllAlerts() {
+            document.getElementById('errorAlert').style.display = 'none';
+            document.getElementById('successAlert').style.display = 'none';
+            document.getElementById('infoAlert').style.display = 'none';
+        }
+
+        // ==================== AUTHENTICATION ====================
+        async function sendOTP() {
+            hideAllAlerts();
+            const phone = document.getElementById('phoneNumber').value.trim();
+            const username = document.getElementById('username').value.trim();
+
+            if (!phone) {
+                showAlert('Please enter your phone number', 'error');
+                return;
+            }
+
+            if (!phone.startsWith('+')) {
+                showAlert('Phone number must start with + (e.g., +919876543210)', 'error');
+                return;
+            }
+
+            if (!username) {
+                showAlert('Please enter your name', 'error');
+                return;
+            }
+
+            const sendBtn = document.getElementById('sendOtpBtn');
+            sendBtn.disabled = true;
+            sendBtn.textContent = 'Sending...';
+
+            try {
+                // Send OTP (registration happens automatically during OTP verification)
+                const otpResponse = await fetch(`${API_BASE}/auth/send-otp`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phoneNumber: phone })
+                });
+
+                if (!otpResponse.ok) {
+                    const errorData = await otpResponse.json();
+                    throw new Error(errorData.error || 'Failed to send OTP');
+                }
+
+                const result = await otpResponse.json();
+                showAlert(result.message || 'OTP sent successfully! Check backend logs for OTP.', 'success');
+                
+                // Show OTP section
+                document.getElementById('phoneSection').style.display = 'none';
+                document.getElementById('otpSection').style.display = 'block';
+                
+                // Store phone for later
+                currentUser.phone = phone;
+                currentUser.username = username;
+
+            } catch (error) {
+                showAlert(error.message, 'error');
+            } finally {
+                sendBtn.disabled = false;
+                sendBtn.textContent = 'Send OTP';
+            }
+        }
+
+        async function verifyOTP() {
+            hideAllAlerts();
+            const otp = document.getElementById('otpCode').value.trim();
+
+            if (!otp || otp.length !== 6) {
+                showAlert('Please enter a valid 6-digit OTP', 'error');
+                return;
+            }
+
+            const verifyBtn = document.getElementById('verifyOtpBtn');
+            verifyBtn.disabled = true;
+            verifyBtn.textContent = 'Verifying...';
+
+            try {
+                const response = await fetch(`${API_BASE}/auth/verify-otp`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        phoneNumber: currentUser.phone,
+                        otp: otp,
+                        username: currentUser.username
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'OTP verification failed');
+                }
+
+                const result = await response.json();
+                currentUser.userId = result.user.phoneNumber;
+                currentUser.username = result.user.username;
+
+                showAlert('Login successful! Loading chat...', 'success');
+                
+                setTimeout(() => {
+                    showChatScreen();
+                }, 1000);
+
+            } catch (error) {
+                showAlert(error.message, 'error');
+            } finally {
+                verifyBtn.disabled = false;
+                verifyBtn.textContent = 'Verify & Login';
+            }
+        }
+
+        function logout() {
+            if (websocket) {
+                websocket.close();
+            }
+            currentUser = { phone: '', username: '', userId: '' };
+            currentRoom = null;
+            
+            document.getElementById('loginScreen').style.display = 'block';
+            document.getElementById('chatScreen').style.display = 'none';
+            
+            // Reset login form
+            document.getElementById('phoneSection').style.display = 'block';
+            document.getElementById('otpSection').style.display = 'none';
+            document.getElementById('phoneNumber').value = '';
+            document.getElementById('username').value = '';
+            document.getElementById('otpCode').value = '';
+            hideAllAlerts();
+        }
+
+        // ==================== CHAT SCREEN ====================
+        async function showChatScreen() {
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('chatScreen').style.display = 'block';
+            
+            // Update user info
+            document.getElementById('currentUsername').textContent = currentUser.username;
+            document.getElementById('currentPhone').textContent = currentUser.phone;
+            document.getElementById('userAvatar').textContent = currentUser.username.charAt(0).toUpperCase();
+            
+            // Connect WebSocket
+            connectWebSocket();
+            
+            // Load rooms
+            await loadRooms();
+        }
+
+        function connectWebSocket() {
+            const wsUrl = `${WS_BASE}?userId=${encodeURIComponent(currentUser.phone)}`;
+            websocket = new WebSocket(wsUrl);
+
+            websocket.onopen = () => {
+                console.log('✅ WebSocket connected');
+                document.getElementById('connectionStatus').classList.remove('offline');
+            };
+
+            websocket.onmessage = (event) => {
+                console.log('📨 Raw WebSocket message received:', event.data);
+                const data = JSON.parse(event.data);
+                console.log('📨 Parsed message:', data);
+                
+                if (data.type === 'connected') {
+                    console.log('Welcome message:', data.message);
+                } else {
+                    // Ensure message has an ID
+                    if (!data.id) {
+                        data.id = generateTempId();
+                    }
+                    console.log('🔄 Processing message, current mode:', currentMessageType);
+                    handleIncomingMessage(data);
+                }
+            };
+
+            websocket.onerror = (error) => {
+                console.error('❌ WebSocket error:', error);
+                document.getElementById('connectionStatus').classList.add('offline');
+            };
+
+            websocket.onclose = () => {
+                console.log('❌ WebSocket disconnected');
+                document.getElementById('connectionStatus').classList.add('offline');
+                
+                // Attempt reconnection after 3 seconds
+                setTimeout(() => {
+                    if (currentUser.phone) {
+                        connectWebSocket();
+                    }
+                }, 3000);
+            };
+        }
+
+        // ==================== ROOM MANAGEMENT ====================
+        async function loadRooms() {
+            try {
+                const response = await fetch(`${API_BASE}/chat/rooms`);
+                if (!response.ok) throw new Error('Failed to load rooms');
+                
+                rooms = await response.json();
+                displayRooms(rooms);
+                
+                // Auto-select first room if available
+                if (rooms.length > 0 && !currentRoom) {
+                    selectRoom(rooms[0]);
+                }
+            } catch (error) {
+                console.error('Error loading rooms:', error);
+                document.getElementById('roomsList').innerHTML = 
+                    '<div class="empty-state">Failed to load rooms</div>';
+            }
+        }
+
+        function displayRooms(roomsToDisplay) {
+            const roomsList = document.getElementById('roomsList');
+            
+            if (roomsToDisplay.length === 0) {
+                roomsList.innerHTML = '<div class="empty-state">No rooms available<br>Create one to get started!</div>';
+                return;
+            }
+
+            roomsList.innerHTML = roomsToDisplay.map(room => `
+                <div class="room-item ${currentRoom && currentRoom.id === room.id ? 'active' : ''}" 
+                     onclick="selectRoom(${JSON.stringify(room).replace(/"/g, '&quot;')})">
+                    <div class="room-name">${escapeHtml(room.name)}</div>
+                    <div class="room-description">${escapeHtml(room.description || 'No description')}</div>
+                </div>
+            `).join('');
+        }
+
+        function filterRooms() {
+            const searchTerm = document.getElementById('roomSearch').value.toLowerCase();
+            const filteredRooms = rooms.filter(room => 
+                room.name.toLowerCase().includes(searchTerm) ||
+                (room.description && room.description.toLowerCase().includes(searchTerm))
+            );
+            displayRooms(filteredRooms);
+        }
+
+        async function selectRoom(room) {
+            currentRoom = room;
+            
+            // Update UI
+            document.getElementById('currentRoomName').textContent = room.name;
+            document.getElementById('currentRoomDesc').textContent = room.description || 'No description';
+            
+            // Update room list UI
+            displayRooms(rooms);
+            
+            // Load room messages
+            await loadRoomMessages(room.id);
+        }
+
+        async function loadRoomMessages(roomId) {
+            try {
+                const response = await fetch(`${API_BASE}/chat/rooms/${roomId}/messages?limit=50`);
+                if (!response.ok) throw new Error('Failed to load messages');
+                
+                const messages = await response.json();
+                
+                // Ensure each message has an ID
+                messages.forEach(msg => {
+                    if (!msg.id) {
+                        msg.id = generateTempId();
+                    }
+                    // Add to allMessages if not already there
+                    if (!allMessages.find(m => m.id === msg.id)) {
+                        allMessages.push(msg);
+                    }
+                });
+                
+                displayMessages(messages);
+            } catch (error) {
+                console.error('Error loading messages:', error);
+                document.getElementById('messagesContainer').innerHTML = 
+                    '<div class="empty-state">Failed to load messages</div>';
+            }
+        }
+
+        function displayMessages(messages) {
+            const container = document.getElementById('messagesContainer');
+            
+            if (messages.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">💬</div>
+                        <h3>No messages yet</h3>
+                        <p>Be the first to send a message!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Ensure all messages have IDs
+            messages.forEach(msg => {
+                if (!msg.id) {
+                    msg.id = generateTempId();
+                }
+            });
+
+            container.innerHTML = messages.map(msg => createMessageHTML(msg)).join('');
+            scrollToBottom();
+        }
+
+        function createMessageHTML(message) {
+            const isOwn = message.senderId === currentUser.phone;
+            const time = new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            const initial = message.senderUsername ? message.senderUsername.charAt(0).toUpperCase() : 'U';
+            
+            // Show delete button only for own messages
+            const deleteBtn = isOwn ? `
+                <button class="delete-msg-btn" onclick="deleteMessage(event, '${message.id || ''}')" title="Delete message">
+                    ✕
+                </button>
+            ` : '';
+            
+            return `
+                <div class="message ${isOwn ? 'own' : ''}" data-msg-id="${message.id || ''}">
+                    <div class="message-avatar">${initial}</div>
+                    <div class="message-content">
+                        <div class="message-header">
+                            <span class="message-sender">${escapeHtml(message.senderUsername || 'Unknown')}</span>
+                            <span class="message-time">${time}</span>
+                            <span class="message-type-badge badge-${message.type.toLowerCase()}">
+                                ${message.type}
+                            </span>
+                            ${deleteBtn}
+                        </div>
+                        <div class="message-bubble">
+                            ${escapeHtml(message.content)}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function handleIncomingMessage(message) {
+            // Store all messages
+            allMessages.push(message);
+            
+            // If it's a UNICAST message, ALWAYS update conversation list (regardless of current mode)
+            if (message.type === 'UNICAST') {
+                const otherPerson = message.senderId === currentUser.phone ? message.roomId : message.senderId;
+                const otherName = message.senderUsername || otherPerson;
+                
+                // Add or update conversation
+                if (!directConversations.has(otherPerson)) {
+                    directConversations.set(otherPerson, {
+                        phone: otherPerson,
+                        name: otherName,
+                        lastMessage: message.content,
+                        timestamp: message.timestamp,
+                        unread: message.senderId !== currentUser.phone ? 1 : 0
+                    });
+                    
+                    console.log(`📩 New conversation added: ${otherName}`);
+                } else {
+                    const conv = directConversations.get(otherPerson);
+                    conv.name = otherName; // Update name in case it changed
+                    conv.lastMessage = message.content;
+                    conv.timestamp = message.timestamp;
+                    if (message.senderId !== currentUser.phone) {
+                        conv.unread = (conv.unread || 0) + 1;
+                    }
+                }
+                
+                // ALWAYS refresh conversation list if in UNICAST mode
+                if (currentMessageType === 'UNICAST') {
+                    displayDirectConversations();
+                }
+            }
+            
+            // Filter based on current message type view
+            let shouldDisplay = false;
+            
+            if (currentMessageType === 'MULTICAST') {
+                // Only show messages for current room
+                shouldDisplay = message.type === 'MULTICAST' && currentRoom && message.roomId === currentRoom.id;
+            } else if (currentMessageType === 'UNICAST') {
+                // Only show direct messages between current user and selected contact
+                shouldDisplay = message.type === 'UNICAST' && 
+                    ((message.senderId === currentUser.phone && message.roomId === selectedContact) ||
+                     (message.senderId === selectedContact && message.roomId === currentUser.phone));
+            } else if (currentMessageType === 'BROADCAST') {
+                // Only show broadcast messages
+                shouldDisplay = message.type === 'BROADCAST';
+            }
+
+            if (shouldDisplay) {
+                const container = document.getElementById('messagesContainer');
+                
+                // Remove empty state if present
+                const emptyState = container.querySelector('.empty-state');
+                if (emptyState) {
+                    container.innerHTML = '';
+                }
+                
+                container.innerHTML += createMessageHTML(message);
+                scrollToBottom();
+            }
+        }
+
+        // ==================== MESSAGE DELETION ====================
+        async function deleteMessage(event, messageId) {
+            event.stopPropagation();
+            
+            if (!messageId || messageId === '' || messageId === 'undefined') {
+                alert('Cannot delete this message - No ID found');
+                return;
+            }
+            
+            if (!confirm('Delete this message?')) {
+                return;
+            }
+            
+            try {
+                // If it's a temporary ID (not saved to DB yet), just remove from UI
+                if (messageId.startsWith('temp_')) {
+                    const messageEl = document.querySelector(`[data-msg-id="${messageId}"]`);
+                    if (messageEl) {
+                        messageEl.remove();
+                        // Remove from allMessages array
+                        allMessages = allMessages.filter(m => m.id !== messageId);
+                    }
+                    return;
+                }
+                
+                // Otherwise, delete from backend
+                const response = await fetch(`${API_BASE}/chat/messages/${messageId}`, {
+                    method: 'DELETE'
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to delete message from server');
+                }
+                
+                // Remove message from UI
+                const messageEl = document.querySelector(`[data-msg-id="${messageId}"]`);
+                if (messageEl) {
+                    messageEl.remove();
+                    // Remove from allMessages array
+                    allMessages = allMessages.filter(m => m.id !== messageId);
+                }
+                
+            } catch (error) {
+                console.error('Error deleting message:', error);
+                alert('Failed to delete message: ' + error.message);
+            }
+        }
+        
+        // ==================== MESSAGE SENDING ====================
+        function selectMessageType(type) {
+            currentMessageType = type;
+            
+            // Update UI
+            document.querySelectorAll('.type-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`[data-type="${type}"]`).classList.add('active');
+            
+            // Clear messages
+            document.getElementById('messagesContainer').innerHTML = '';
+            
+            // Update view based on type
+            if (type === 'MULTICAST') {
+                // Show room list
+                document.querySelector('.sidebar').style.display = 'flex';
+                document.getElementById('currentRoomName').textContent = currentRoom ? currentRoom.name : 'Select a room';
+                document.getElementById('currentRoomDesc').textContent = currentRoom ? currentRoom.description : 'Choose a room to start chatting';
+                document.getElementById('targetSelector').style.display = 'none';
+                
+                // Load room messages if room selected
+                if (currentRoom) {
+                    loadRoomMessages(currentRoom.id);
+                }
+            } else if (type === 'UNICAST') {
+                // Show conversation list
+                document.querySelector('.sidebar').style.display = 'flex';
+                document.getElementById('currentRoomName').textContent = 'Direct Messages';
+                document.getElementById('currentRoomDesc').textContent = 'Select a conversation';
+                document.getElementById('targetSelector').style.display = 'none';
+                
+                // Load direct conversations
+                loadDirectConversations();
+            } else if (type === 'BROADCAST') {
+                // Show broadcast messages
+                document.querySelector('.sidebar').style.display = 'none';
+                document.getElementById('currentRoomName').textContent = 'Broadcast Messages';
+                document.getElementById('currentRoomDesc').textContent = 'Messages sent to everyone';
+                document.getElementById('targetSelector').style.display = 'none';
+                
+                // Load broadcast messages
+                loadBroadcastMessages();
+            }
+        }
+
+        function sendMessage() {
+            const content = document.getElementById('messageInput').value.trim();
+            
+            if (!content) {
+                return;
+            }
+
+            if (!websocket || websocket.readyState !== WebSocket.OPEN) {
+                alert('Not connected to server. Please wait...');
+                return;
+            }
+
+            const message = {
+                id: generateTempId(), // Temporary ID for frontend
+                type: currentMessageType,
+                senderId: currentUser.phone,
+                senderUsername: currentUser.username,
+                content: content,
+                timestamp: new Date().toISOString()
+            };
+
+            // Set roomId based on message type
+            if (currentMessageType === 'MULTICAST') {
+                if (!currentRoom) {
+                    alert('Please select a room first');
+                    return;
+                }
+                message.roomId = currentRoom.id;
+            } else if (currentMessageType === 'UNICAST') {
+                if (!selectedContact) {
+                    alert('Please select or enter a contact first');
+                    return;
+                }
+                message.roomId = selectedContact; // For UNICAST, roomId is target phone
+            }
+            // BROADCAST doesn't need roomId
+
+            // Send via WebSocket
+            websocket.send(JSON.stringify(message));
+            
+            // Clear input
+            document.getElementById('messageInput').value = '';
+            
+            // Add message to UI immediately (optimistic update)
+            handleIncomingMessage(message);
+        }
+        
+        function generateTempId() {
+            return 'temp_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        }
+
+        function handleMessageKeyPress(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                sendMessage();
+            }
+        }
+
+        // ==================== DIRECT MESSAGES ====================
+        function displayDirectConversations() {
+            const roomsList = document.getElementById('roomsList');
+            
+            if (directConversations.size === 0) {
+                roomsList.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">💬</div>
+                        <h3>No Conversations Yet</h3>
+                        <p>Start a direct message to see conversations here</p>
+                        <button class="btn btn-primary" style="width: 80%; margin-top: 15px;" onclick="promptNewDirectMessage()">
+                            + New Direct Message
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Sort conversations by timestamp
+            const sortedConvs = Array.from(directConversations.values()).sort((a, b) => {
+                return new Date(b.timestamp) - new Date(a.timestamp);
+            });
+            
+            let html = '<button class="btn btn-primary" style="width: 100%; margin-bottom: 10px;" onclick="promptNewDirectMessage()">+ New Direct Message</button>';
+            
+            sortedConvs.forEach(conv => {
+                const isActive = selectedContact === conv.phone;
+                const unreadBadge = conv.unread > 0 ? `<span style="background: #f44336; color: white; padding: 2px 6px; border-radius: 10px; font-size: 11px; margin-left: 5px;">${conv.unread}</span>` : '';
+                
+                html += `
+                    <div class="room-item ${isActive ? 'active' : ''}" onclick="selectDirectConversation('${conv.phone}', '${escapeHtml(conv.name)}')">
+                        <div class="room-name">
+                            ${escapeHtml(conv.name)} ${unreadBadge}
+                        </div>
+                        <div class="room-description" style="font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                            ${escapeHtml(conv.lastMessage || 'No messages yet')}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            roomsList.innerHTML = html;
+        }
+        
+        function selectDirectConversation(phone, name) {
+            selectedContact = phone;
+            document.getElementById('currentRoomName').textContent = `Direct: ${name}`;
+            document.getElementById('currentRoomDesc').textContent = 'Private conversation';
+            
+            // Mark as read
+            if (directConversations.has(phone)) {
+                directConversations.get(phone).unread = 0;
+                displayDirectConversations();
+            }
+            
+            // Load messages for this conversation
+            loadDirectMessages(phone);
+        }
+        
+        function loadDirectMessages(contactPhone) {
+            const messages = allMessages.filter(msg => 
+                msg.type === 'UNICAST' &&
+                ((msg.senderId === currentUser.phone && msg.roomId === contactPhone) ||
+                 (msg.senderId === contactPhone && msg.roomId === currentUser.phone))
+            );
+            
+            displayMessages(messages);
+        }
+        
+        async function loadDirectConversations() {
+            displayDirectConversations();
+            
+            // Clear messages
+            document.getElementById('messagesContainer').innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-state-icon">👤</div>
+                    <h3>Select a conversation</h3>
+                    <p>Choose someone to start chatting</p>
+                </div>
+            `;
+        }
+        
+        function promptNewDirectMessage() {
+            const phone = prompt('Enter phone number to message (e.g., +919876543210):');
+            if (phone && phone.startsWith('+')) {
+                selectDirectConversation(phone, phone);
+            }
+        }
+        
+        // ==================== BROADCAST MESSAGES ====================
+        async function loadBroadcastMessages() {
+            try {
+                // In a real app, you'd filter messages by type=BROADCAST
+                // For now, show empty state
+                document.getElementById('messagesContainer').innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📢</div>
+                        <h3>No Broadcast Messages</h3>
+                        <p>Send a broadcast to reach everyone!</p>
+                    </div>
+                `;
+            } catch (error) {
+                console.error('Error loading broadcast messages:', error);
+            }
+        }
+        
+        // ==================== CREATE ROOM ====================
+        function showCreateRoomModal() {
+            document.getElementById('createRoomModal').style.display = 'flex';
+        }
+
+        function closeCreateRoomModal() {
+            document.getElementById('createRoomModal').style.display = 'none';
+            document.getElementById('newRoomName').value = '';
+            document.getElementById('newRoomDesc').value = '';
+        }
+
+        async function createRoom() {
+            const name = document.getElementById('newRoomName').value.trim();
+            const description = document.getElementById('newRoomDesc').value.trim();
+
+            if (!name) {
+                alert('Please enter room name');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/chat/rooms`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name: name,
+                        description: description,
+                        createdBy: currentUser.phone,
+                        isPrivate: false,
+                        maxMembers: 100
+                    })
+                });
+
+                if (!response.ok) throw new Error('Failed to create room');
+
+                const newRoom = await response.json();
+                rooms.push(newRoom);
+                displayRooms(rooms);
+                selectRoom(newRoom);
+                closeCreateRoomModal();
+
+            } catch (error) {
+                alert('Error creating room: ' + error.message);
+            }
+        }
+
+        // ==================== UTILITY ====================
+        function scrollToBottom() {
+            const container = document.getElementById('messagesContainer');
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // ==================== INIT ====================
+        // Check if user is already logged in (from localStorage)
+        window.onload = function() {
+            const savedUser = localStorage.getItem('chatUser');
+            if (savedUser) {
+                try {
+                    currentUser = JSON.parse(savedUser);
+                    showChatScreen();
+                } catch (e) {
+                    // Invalid data, clear it
+                    localStorage.removeItem('chatUser');
+                }
+            }
+        };
+
+        // Save user to localStorage when logging in
+        function saveUserToStorage() {
+            localStorage.setItem('chatUser', JSON.stringify(currentUser));
+        }
+
+        // Clear on logout
+        function clearUserFromStorage() {
+            localStorage.removeItem('chatUser');
+        }
+    </script>
+</body>
+</html>

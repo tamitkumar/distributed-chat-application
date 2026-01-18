@@ -1,0 +1,1956 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Distributed Chat Application - Architecture Documentation</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f5f5f5;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 20px;
+            text-align: center;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .nav {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 20px;
+            z-index: 100;
+        }
+
+        .nav ul {
+            list-style: none;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .nav a {
+            color: #667eea;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+
+        .nav a:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .section {
+            background: white;
+            padding: 30px;
+            margin-bottom: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .section h2 {
+            color: #667eea;
+            font-size: 2em;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #667eea;
+        }
+
+        .section h3 {
+            color: #764ba2;
+            font-size: 1.5em;
+            margin-top: 25px;
+            margin-bottom: 15px;
+        }
+
+        .section h4 {
+            color: #555;
+            font-size: 1.2em;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+
+        .diagram {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            overflow-x: auto;
+        }
+
+        .component-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .component-box h4 {
+            color: white;
+            margin-bottom: 10px;
+        }
+
+        .info-box {
+            background: #e3f2fd;
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+
+        .success-box {
+            background: #e8f5e9;
+            border-left: 4px solid #4CAF50;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+
+        .warning-box {
+            background: #fff3e0;
+            border-left: 4px solid #FF9800;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+
+        .error-box {
+            background: #ffebee;
+            border-left: 4px solid #f44336;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        th {
+            background: #667eea;
+            color: white;
+            padding: 12px;
+            text-align: left;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        tr:hover {
+            background: #f5f5f5;
+        }
+
+        code {
+            background: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            color: #e91e63;
+        }
+
+        pre {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 15px 0;
+        }
+
+        pre code {
+            background: transparent;
+            color: #f8f8f2;
+            padding: 0;
+        }
+
+        .flow-step {
+            background: white;
+            border: 2px solid #667eea;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            position: relative;
+            padding-left: 60px;
+        }
+
+        .flow-step::before {
+            content: attr(data-step);
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #667eea;
+            color: white;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .tech-stack {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .tech-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+
+        .tech-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .tech-card h4 {
+            color: white;
+            margin-bottom: 10px;
+            font-size: 1.3em;
+        }
+
+        .endpoint-box {
+            background: #f5f5f5;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+
+        .endpoint-box .method {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .method.post {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .method.get {
+            background: #2196F3;
+            color: white;
+        }
+
+        .method.put {
+            background: #FF9800;
+            color: white;
+        }
+
+        .method.delete {
+            background: #f44336;
+            color: white;
+        }
+
+        @media print {
+            .nav {
+                position: static;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🚀 Distributed Chat Application</h1>
+            <p>Complete Architecture Documentation (HLD & LLD)</p>
+            <p style="font-size: 0.9em; margin-top: 10px;">Spring Boot 4.0 | Java 25 | Kafka | Redis | HAProxy | MySQL</p>
+            <p style="font-size: 0.85em; margin-top: 15px; background: rgba(255,255,255,0.2); padding: 10px; border-radius: 5px;">
+                <strong>Latest Updates:</strong> Custom Kafka Serializers | MySQL Port 3307 | Full-Featured Chat UI | Database Auto-Init | Message DTO Compatibility Fix
+            </p>
+        </header>
+
+        <nav class="nav">
+            <ul>
+                <li><a href="#overview">Overview</a></li>
+                <li><a href="#hld">High-Level Design</a></li>
+                <li><a href="#lld">Low-Level Design</a></li>
+                <li><a href="#components">Components</a></li>
+                <li><a href="#flows">Message Flows</a></li>
+                <li><a href="#configuration">Configuration</a></li>
+                <li><a href="#testing">Testing Guide</a></li>
+            </ul>
+        </nav>
+
+        <!-- OVERVIEW -->
+        <section id="overview" class="section">
+            <h2>📋 System Overview</h2>
+            
+            <div class="success-box">
+                <h4>✅ Production-Ready Distributed Chat System</h4>
+                <p>A horizontally scalable, real-time chat application supporting UNICAST, MULTICAST, and BROADCAST messaging patterns with guaranteed message delivery using Apache Kafka.</p>
+            </div>
+
+            <h3>🎯 Key Features</h3>
+            <ul style="margin-left: 40px; margin-top: 15px;">
+                <li><strong>Real-time Communication:</strong> WebSocket-based bidirectional communication</li>
+                <li><strong>Distributed Architecture:</strong> Multiple server instances with load balancing</li>
+                <li><strong>Message Persistence:</strong> Kafka for reliable message storage and delivery</li>
+                <li><strong>High Availability:</strong> HAProxy load balancer with health checks</li>
+                <li><strong>Caching:</strong> Redis for user sessions and online status</li>
+                <li><strong>User Management:</strong> Phone-based authentication with OTP</li>
+                <li><strong>Message Types:</strong> UNICAST (1-to-1), MULTICAST (Room), BROADCAST (All)</li>
+            </ul>
+
+            <h3>🛠️ Technology Stack</h3>
+            <div class="tech-stack">
+                <div class="tech-card">
+                    <h4>☕ Backend</h4>
+                    <p>Java 25</p>
+                    <p>Spring Boot 4.0</p>
+                    <p>Spring WebSocket</p>
+                </div>
+                <div class="tech-card">
+                    <h4>📨 Messaging</h4>
+                    <p>Apache Kafka 7.5</p>
+                    <p>Zookeeper</p>
+                    <p>Spring Kafka</p>
+                </div>
+                <div class="tech-card">
+                    <h4>💾 Storage</h4>
+                    <p>MySQL 8.0</p>
+                    <p>Redis 7</p>
+                    <p>Spring Data JPA</p>
+                </div>
+                <div class="tech-card">
+                    <h4>⚖️ Load Balancer</h4>
+                    <p>HAProxy 2.8</p>
+                    <p>Health Checks</p>
+                    <p>Round Robin</p>
+                </div>
+                <div class="tech-card">
+                    <h4>🔧 Build & Deploy</h4>
+                    <p>Gradle 9.2</p>
+                    <p>Docker</p>
+                    <p>Docker Compose</p>
+                </div>
+                <div class="tech-card">
+                    <h4>📚 Documentation</h4>
+                    <p>Swagger/OpenAPI</p>
+                    <p>Spring Doc</p>
+                    <p>Actuator</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- HIGH-LEVEL DESIGN -->
+        <section id="hld" class="section">
+            <h2>🏗️ High-Level Design (HLD)</h2>
+
+            <h3>System Architecture Diagram</h3>
+            <div class="diagram">
+                <pre class="mermaid">
+graph TB
+    subgraph "Client Layer"
+        C1[Browser Client 1<br/>Alice]
+        C2[Browser Client 2<br/>Bob]
+        C3[Browser Client N<br/>Others]
+    end
+
+    subgraph "Load Balancer"
+        HAP[HAProxy<br/>Port 80<br/>Round Robin + Health Check]
+    end
+
+    subgraph "Application Layer"
+        S1[Chat Server 1<br/>Port 8080<br/>WebSocket Handler]
+        S2[Chat Server 2<br/>Port 8081<br/>WebSocket Handler]
+        S3[Chat Server N<br/>Port 808N<br/>WebSocket Handler]
+    end
+
+    subgraph "Message Broker"
+        K1[Kafka Broker<br/>Port 9092]
+        K2[Kafka Topics:<br/>chat.unicast<br/>chat.multicast<br/>chat.broadcast]
+        ZK[Zookeeper<br/>Port 2181<br/>Coordination]
+    end
+
+    subgraph "Cache Layer"
+        R1[Redis<br/>Port 6379]
+        R2[User Sessions<br/>Online Status<br/>Message Inbox]
+    end
+
+    subgraph "Database Layer"
+        DB1[MySQL<br/>Port 3307 (external)<br/>Port 3306 (internal)]
+        DB2[Tables:<br/>users<br/>rooms<br/>room_members<br/>messages<br/>user_rooms]
+    end
+
+    C1 -->|WebSocket| HAP
+    C2 -->|WebSocket| HAP
+    C3 -->|WebSocket| HAP
+
+    HAP -->|Round Robin| S1
+    HAP -->|Round Robin| S2
+    HAP -->|Round Robin| S3
+
+    S1 -->|Publish| K1
+    S2 -->|Publish| K1
+    S3 -->|Publish| K1
+
+    K1 -->|Subscribe| S1
+    K1 -->|Subscribe| S2
+    K1 -->|Subscribe| S3
+
+    K1 <-->|Manage| ZK
+
+    S1 <-->|Cache| R1
+    S2 <-->|Cache| R1
+    S3 <-->|Cache| R1
+
+    S1 <-->|Persist| DB1
+    S2 <-->|Persist| DB1
+    S3 <-->|Persist| DB1
+
+    K1 --- K2
+    R1 --- R2
+    DB1 --- DB2
+                </pre>
+            </div>
+
+            <h3>Component Responsibilities</h3>
+
+            <div class="component-box">
+                <h4>🌐 HAProxy Load Balancer</h4>
+                <ul>
+                    <li><strong>Purpose:</strong> Distribute incoming WebSocket connections across multiple server instances</li>
+                    <li><strong>Algorithm:</strong> Round Robin (equal distribution)</li>
+                    <li><strong>Health Check:</strong> HTTP GET /actuator/health every 5 seconds</li>
+                    <li><strong>Ports:</strong> 80 (main), 8404 (stats dashboard)</li>
+                    <li><strong>HA Achievement:</strong> Automatic failover - if a server goes down, traffic redirects to healthy servers</li>
+                </ul>
+            </div>
+
+            <div class="component-box">
+                <h4>📨 Apache Kafka (Message Broker)</h4>
+                <ul>
+                    <li><strong>Purpose:</strong> Reliable, persistent message distribution across servers</li>
+                    <li><strong>Topics:</strong> 3 fixed topics (chat.unicast, chat.multicast, chat.broadcast)</li>
+                    <li><strong>Consumer Groups:</strong> Each server has unique group ID (server-1, server-2, etc.)</li>
+                    <li><strong>Partitions:</strong> Single partition per topic for guaranteed ordering</li>
+                    <li><strong>Retention:</strong> 7 days default (configurable)</li>
+                    <li><strong>Delivery:</strong> At-least-once delivery with idempotency</li>
+                </ul>
+            </div>
+
+            <div class="component-box">
+                <h4>💾 Redis Cache</h4>
+                <ul>
+                    <li><strong>Purpose:</strong> Fast in-memory caching (NOT for message distribution)</li>
+                    <li><strong>Use Cases:</strong>
+                        <ul>
+                            <li>User online/offline status</li>
+                            <li>Session management</li>
+                            <li>Offline message inbox (user:inbox:userId)</li>
+                            <li>Rate limiting (future)</li>
+                        </ul>
+                    </li>
+                    <li><strong>TTL:</strong> 24 hours for inbox messages</li>
+                </ul>
+            </div>
+
+            <div class="component-box">
+                <h4>🗄️ MySQL Database</h4>
+                <ul>
+                    <li><strong>Purpose:</strong> Persistent storage for users, rooms, and message history</li>
+                    <li><strong>Port Configuration:</strong>
+                        <ul>
+                            <li><code>3307</code> - External access (from host machine/IntelliJ)</li>
+                            <li><code>3306</code> - Internal Docker network access</li>
+                            <li><strong>Reason:</strong> Avoids conflict with local MySQL installations on host</li>
+                        </ul>
+                    </li>
+                    <li><strong>Initialization:</strong> <code>mysql-init.sql</code> automatically creates users with proper authentication:
+                        <ul>
+                            <li><code>root@'%'</code>, <code>root@'localhost'</code>, <code>root@'127.0.0.1'</code> - password: root</li>
+                            <li><code>chatuser@'%'</code>, <code>chatuser@'localhost'</code>, <code>chatuser@'127.0.0.1'</code> - password: chatpass</li>
+                            <li>All use <code>mysql_native_password</code> for maximum compatibility</li>
+                        </ul>
+                    </li>
+                    <li><strong>Tables:</strong>
+                        <ul>
+                            <li><code>users</code> - User accounts (phone-based auth)</li>
+                            <li><code>rooms</code> - Chat rooms</li>
+                            <li><code>room_members</code> - Room membership mapping</li>
+                            <li><code>user_rooms</code> - User-room relationships</li>
+                            <li><code>messages</code> - Message history (for retrieval)</li>
+                        </ul>
+                    </li>
+                    <li><strong>Schema Management:</strong> Hibernate auto-DDL with Java configuration (ChatDBConfiguration.java)</li>
+                    <li><strong>Connection Pool:</strong> HikariCP for efficient connection management</li>
+                </ul>
+            </div>
+
+            <h3>Why This Architecture?</h3>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Component</th>
+                        <th>Why Chosen</th>
+                        <th>Alternative</th>
+                        <th>Why Not Alternative</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Kafka</strong></td>
+                        <td>Message persistence, guaranteed delivery, replay capability</td>
+                        <td>Redis Pub/Sub</td>
+                        <td>Fire-and-forget, no persistence, messages lost if no subscriber</td>
+                    </tr>
+                    <tr>
+                        <td><strong>HAProxy</strong></td>
+                        <td>Battle-tested, high performance, simple configuration</td>
+                        <td>Nginx</td>
+                        <td>More complex WebSocket config, overkill for our use case</td>
+                    </tr>
+                    <tr>
+                        <td><strong>WebSocket</strong></td>
+                        <td>Full-duplex, low latency, persistent connection</td>
+                        <td>HTTP Polling</td>
+                        <td>High overhead, wasted requests, higher latency</td>
+                    </tr>
+                    <tr>
+                        <td><strong>MySQL</strong></td>
+                        <td>ACID compliance, relational data, mature ecosystem</td>
+                        <td>MongoDB</td>
+                        <td>Chat needs structured data (users, rooms, relationships)</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- LOW-LEVEL DESIGN -->
+        <section id="lld" class="section">
+            <h2>🔧 Low-Level Design (LLD)</h2>
+
+            <h3>Application Architecture</h3>
+
+            <div class="diagram">
+                <pre class="mermaid">
+graph TB
+    subgraph "Presentation Layer"
+        WS[WebSocket Handler<br/>ChatWebSocketHandler]
+    end
+
+    subgraph "Service Layer"
+        CS[Chat Service<br/>Message Processing]
+        US[User Service<br/>Auth & Management]
+        RS[Room Service<br/>Room Operations]
+        KP[Kafka Producer<br/>Message Publishing]
+        KC[Kafka Consumer<br/>Message Receiving]
+    end
+
+    subgraph "Strategy Pattern"
+        UNI[Unicast Strategy]
+        MULTI[Multicast Strategy]
+        BROAD[Broadcast Strategy]
+    end
+
+    subgraph "Repository Layer"
+        MR[Message Repository]
+        UR[User Repository]
+        RR[Room Repository]
+    end
+
+    subgraph "External Services"
+        KF[Kafka]
+        RD[Redis]
+        MY[MySQL]
+    end
+
+    WS -->|Receive Message| CS
+    WS -->|Manage Sessions| KC
+
+    CS -->|Route| UNI
+    CS -->|Route| MULTI
+    CS -->|Route| BROAD
+
+    UNI -->|Publish| KP
+    MULTI -->|Publish| KP
+    BROAD -->|Publish| KP
+
+    KP -->|Send| KF
+    KF -->|Receive| KC
+    KC -->|Deliver| WS
+
+    CS -->|Save| MR
+    US -->|CRUD| UR
+    RS -->|CRUD| RR
+
+    MR -->|Persist| MY
+    UR -->|Persist| MY
+    RR -->|Persist| MY
+
+    US -->|Cache| RD
+    UNI -->|Inbox| RD
+                </pre>
+            </div>
+
+            <h3>Class Diagram - Core Components</h3>
+
+            <div class="diagram">
+                <pre class="mermaid">
+classDiagram
+    class ChatWebSocketHandler {
+        -ChatService chatService
+        -KafkaConsumerService kafkaConsumer
+        -RoomService roomService
+        -UserService userService
+        +afterConnectionEstablished()
+        +afterConnectionClosed()
+        +handleTextMessage()
+        -handleUnicastMessage()
+        -handleMulticastMessage()
+        -handleBroadcastMessage()
+    }
+
+    class ChatService {
+        <<interface>>
+        +sendMessage(Message)
+        +getMessageHistory(roomId, limit)
+        +deleteMessage(messageId)
+    }
+
+    class ChatServiceImpl {
+        -MessageRepository messageRepo
+        -Map~String,Strategy~ strategies
+        +sendMessage(Message)
+        +getMessageHistory(roomId, limit)
+    }
+
+    class MessageRoutingStrategy {
+        <<interface>>
+        +route(Message)
+    }
+
+    class UnicastStrategy {
+        -KafkaProducerService kafka
+        -StringRedisTemplate redis
+        +route(Message)
+    }
+
+    class MulticastStrategy {
+        -KafkaProducerService kafka
+        -RoomService roomService
+        +route(Message)
+    }
+
+    class BroadcastStrategy {
+        -KafkaProducerService kafka
+        +route(Message)
+    }
+
+    class KafkaProducerService {
+        -KafkaTemplate kafkaTemplate
+        +publishUnicast(userId, message)
+        +publishMulticast(roomId, message)
+        +publishBroadcast(message)
+    }
+
+    class KafkaConsumerService {
+        -Map sessions
+        -Map userSessions
+        +consumeUnicast(message)
+        +consumeMulticast(message)
+        +consumeBroadcast(message)
+    }
+
+    ChatWebSocketHandler --> ChatService
+    ChatWebSocketHandler --> KafkaConsumerService
+    ChatService <|.. ChatServiceImpl
+    ChatServiceImpl --> MessageRoutingStrategy
+    MessageRoutingStrategy <|.. UnicastStrategy
+    MessageRoutingStrategy <|.. MulticastStrategy
+    MessageRoutingStrategy <|.. BroadcastStrategy
+    UnicastStrategy --> KafkaProducerService
+    MulticastStrategy --> KafkaProducerService
+    BroadcastStrategy --> KafkaProducerService
+    KafkaConsumerService --> ChatWebSocketHandler
+                </pre>
+            </div>
+
+            <h3>Database Schema</h3>
+
+            <div class="diagram">
+                <pre class="mermaid">
+erDiagram
+    USERS ||--o{ MESSAGES : sends
+    USERS ||--o{ ROOM_MEMBERS : joins
+    ROOMS ||--o{ ROOM_MEMBERS : has
+    ROOMS ||--o{ MESSAGES : contains
+
+    USERS {
+        varchar id PK
+        varchar phone_number UK
+        varchar username
+        varchar password_hash
+        boolean is_online
+        datetime last_seen
+        datetime created_at
+    }
+
+    ROOMS {
+        varchar id PK
+        varchar name
+        enum type
+        datetime created_at
+    }
+
+    ROOM_MEMBERS {
+        varchar room_id FK
+        varchar user_id FK
+        datetime joined_at
+    }
+
+    MESSAGES {
+        varchar id PK
+        varchar room_id FK
+        varchar sender_id FK
+        varchar sender_username
+        text content
+        enum type
+        datetime timestamp
+        varchar server_id
+    }
+                </pre>
+            </div>
+
+            <h3>Design Patterns Used</h3>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Pattern</th>
+                        <th>Implementation</th>
+                        <th>Benefit</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Strategy Pattern</strong></td>
+                        <td>MessageRoutingStrategy with 3 concrete implementations (Unicast, Multicast, Broadcast)</td>
+                        <td>Easy to add new message types without modifying existing code</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Dependency Injection</strong></td>
+                        <td>Constructor injection for all services (Spring IoC)</td>
+                        <td>Loose coupling, testability, maintainability</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Repository Pattern</strong></td>
+                        <td>Spring Data JPA repositories for data access</td>
+                        <td>Abstraction over data layer, easy to switch databases</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Observer Pattern</strong></td>
+                        <td>Kafka consumers listening to topics (@KafkaListener)</td>
+                        <td>Decoupled communication between servers</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Factory Pattern</strong></td>
+                        <td>ObjectMapper bean creation for JSON serialization</td>
+                        <td>Centralized configuration, reusability</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- COMPONENTS DETAIL -->
+        <section id="components" class="section">
+            <h2>🧩 Component Details</h2>
+
+            <h3>1. HAProxy Load Balancer</h3>
+
+            <div class="info-box">
+                <h4>📍 Configuration File: haproxy.cfg</h4>
+                <p><strong>Load Balancing Algorithm:</strong> Round Robin</p>
+                <p><strong>Health Check:</strong> HTTP GET /actuator/health every 5 seconds, timeout 3s</p>
+                <p><strong>Failover:</strong> If server fails 3 consecutive health checks, it's marked DOWN and removed from rotation</p>
+            </div>
+
+            <h4>How HAProxy Achieves Load Balancing:</h4>
+            <ol style="margin-left: 40px; margin-top: 10px;">
+                <li><strong>Round Robin Distribution:</strong>
+                    <ul>
+                        <li>Connection 1 → Server 1</li>
+                        <li>Connection 2 → Server 2</li>
+                        <li>Connection 3 → Server 1 (cycle repeats)</li>
+                    </ul>
+                </li>
+                <li><strong>Health Monitoring:</strong>
+                    <ul>
+                        <li>Periodic health checks to <code>/actuator/health</code></li>
+                        <li>Only routes to HEALTHY servers</li>
+                        <li>Automatic recovery when server comes back online</li>
+                    </ul>
+                </li>
+                <li><strong>Session Persistence:</strong>
+                    <ul>
+                        <li>WebSocket connections remain on assigned server</li>
+                        <li>No mid-connection switching</li>
+                    </ul>
+                </li>
+            </ol>
+
+            <pre><code>frontend chat_frontend
+    bind *:80
+    default_backend chat_servers
+
+backend chat_servers
+    balance roundrobin
+    option httpchk GET /actuator/health
+    http-check expect status 200
+    server chat-app-1 chat-app-1:8080 check inter 5s fall 3 rise 2
+    server chat-app-2 chat-app-2:8080 check inter 5s fall 3 rise 2</code></pre>
+
+            <h3>2. Apache Kafka</h3>
+
+            <div class="info-box">
+                <h4>📍 Kafka Topics Architecture</h4>
+                <p><strong>Design Decision:</strong> 3 FIXED topics instead of dynamic per-user topics</p>
+                <p><strong>Reason:</strong> Dynamic topics don't work well with pattern-based subscriptions</p>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Topic</th>
+                        <th>Purpose</th>
+                        <th>Partition Strategy</th>
+                        <th>Consumer Behavior</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>chat.unicast</code></td>
+                        <td>Direct 1-to-1 messages</td>
+                        <td>Single partition</td>
+                        <td>All servers consume, filter by target userId</td>
+                    </tr>
+                    <tr>
+                        <td><code>chat.multicast</code></td>
+                        <td>Room-based messages</td>
+                        <td>Single partition</td>
+                        <td>All servers consume, deliver to room members</td>
+                    </tr>
+                    <tr>
+                        <td><code>chat.broadcast</code></td>
+                        <td>Global messages to all users</td>
+                        <td>Single partition</td>
+                        <td>All servers consume, deliver to all connections</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h4>Kafka Configuration:</h4>
+            <ul style="margin-left: 40px;">
+                <li><strong>Producer:</strong>
+                    <ul>
+                        <li><code>acks=all</code> - Wait for all replicas (data safety)</li>
+                        <li><code>retries=3</code> - Retry failed sends</li>
+                        <li><code>enable.idempotence=true</code> - Exactly-once semantics</li>
+                    </ul>
+                </li>
+                <li><strong>Consumer:</strong>
+                    <ul>
+                        <li><code>group-id=server-{id}</code> - Unique group per server (all receive messages)</li>
+                        <li><code>auto-offset-reset=latest</code> - Start from latest messages</li>
+                        <li><code>enable-auto-commit=true</code> - Automatic offset management</li>
+                    </ul>
+                </li>
+            </ul>
+
+            <div class="warning-box">
+                <h4>⚠️ Custom Kafka Serializers (Spring Boot 4.0 Migration)</h4>
+                <p><strong>Issue:</strong> Spring Kafka's <code>JsonSerializer</code> and <code>JsonDeserializer</code> are deprecated in Spring Kafka 4.0</p>
+                <p><strong>Solution:</strong> Implemented custom serializers:</p>
+                <ul>
+                    <li><code>KafkaJsonSerializer</code> - Custom JSON serializer using Jackson ObjectMapper</li>
+                    <li><code>KafkaJsonDeserializer</code> - Custom JSON deserializer with type safety</li>
+                    <li>Both are Java records for immutability and clean code</li>
+                    <li>Located in: <code>com.techbrain.chat.cofig</code> package</li>
+                </ul>
+            </div>
+
+            <h3>3. Message DTO Configuration</h3>
+
+            <div class="success-box">
+                <h4>✅ Frontend-Backend Compatibility Fix</h4>
+                <p><strong>Issue:</strong> Frontend sends message objects with additional fields (like <code>id</code> for delete functionality) that backend doesn't recognize</p>
+                <p><strong>Solution:</strong> Added <code>@JsonIgnoreProperties(ignoreUnknown = true)</code> to <code>Message.java</code></p>
+                <ul>
+                    <li>Allows frontend to include extra fields without causing deserialization errors</li>
+                    <li>Maintains backward compatibility with different client versions</li>
+                    <li>Prevents "Unrecognized field" errors during JSON parsing</li>
+                </ul>
+            </div>
+
+            <h3>4. Redis Usage</h3>
+
+            <div class="warning-box">
+                <h4>⚠️ Important: Redis is NO LONGER used for message distribution!</h4>
+                <p>Previous versions used Redis Pub/Sub, but that was replaced with Kafka for better reliability.</p>
+            </div>
+
+            <h4>Current Redis Use Cases:</h4>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Key Pattern</th>
+                        <th>Purpose</th>
+                        <th>TTL</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>user:inbox:{userId}</code></td>
+                        <td>Store offline messages for retrieval</td>
+                        <td>24 hours</td>
+                    </tr>
+                    <tr>
+                        <td><code>user:online:{userId}</code></td>
+                        <td>Track online/offline status</td>
+                        <td>Session-based</td>
+                    </tr>
+                    <tr>
+                        <td><code>user:session:{sessionId}</code></td>
+                        <td>WebSocket session mapping</td>
+                        <td>Session-based</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>5. Frontend Chat Application</h3>
+
+            <div class="info-box">
+                <h4>📱 Full-Featured Web Client: chat-app.html</h4>
+                <p>A complete, production-ready chat interface with real-time messaging capabilities</p>
+            </div>
+
+            <h4>Key Features:</h4>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Feature</th>
+                        <th>Description</th>
+                        <th>Implementation</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Phone-based Authentication</strong></td>
+                        <td>OTP-based login with phone numbers</td>
+                        <td>Integrated with /api/auth/send-otp and /api/auth/verify-otp</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Room Chat</strong></td>
+                        <td>Join/create chat rooms, search rooms</td>
+                        <td>MULTICAST messages, room listing, real-time room updates</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Direct Messages</strong></td>
+                        <td>1-to-1 private messaging</td>
+                        <td>UNICAST messages with conversation list and unread counts</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Broadcast</strong></td>
+                        <td>Send messages to all users</td>
+                        <td>BROADCAST messages visible to all connected users</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Conversation List</strong></td>
+                        <td>Shows all direct message contacts</td>
+                        <td>Auto-updates on new messages, displays last message and unread count</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Message Deletion</strong></td>
+                        <td>Delete own messages</td>
+                        <td>Red '✕' button on own messages, calls DELETE /api/chat/messages/{id}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Real-time Updates</strong></td>
+                        <td>Live message delivery and status</td>
+                        <td>WebSocket connection with automatic reconnection</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h4>UI Layout:</h4>
+            <ul style="margin-left: 40px;">
+                <li><strong>Left Sidebar:</strong> Room list with search, or conversation list for direct messages</li>
+                <li><strong>Main Area:</strong> Message display with sender avatars and timestamps</li>
+                <li><strong>Top Bar:</strong> User info, tabs (Room Chat / Direct / Broadcast), logout</li>
+                <li><strong>Bottom Bar:</strong> Message input with Send button</li>
+            </ul>
+
+            <h3>6. WebSocket Handler</h3>
+
+            <h4>Lifecycle Events:</h4>
+            <div class="flow-step" data-step="1">
+                <strong>afterConnectionEstablished()</strong><br>
+                - Extract userId from query params<br>
+                - Register session with KafkaConsumerService<br>
+                - Mark user as online in Redis<br>
+                - Send welcome message
+            </div>
+
+            <div class="flow-step" data-step="2">
+                <strong>handleTextMessage()</strong><br>
+                - Parse JSON message<br>
+                - Determine message type (UNICAST/MULTICAST/BROADCAST)<br>
+                - Call appropriate handler<br>
+                - Set serverId and timestamp
+            </div>
+
+            <div class="flow-step" data-step="3">
+                <strong>afterConnectionClosed()</strong><br>
+                - Remove session from KafkaConsumerService<br>
+                - Mark user as offline in Redis<br>
+                - Update last_seen timestamp
+            </div>
+        </section>
+
+        <!-- MESSAGE FLOWS -->
+        <section id="flows" class="section">
+            <h2>🔄 Message Flows</h2>
+
+            <h3>Flow 1: UNICAST Message (Alice → Bob)</h3>
+
+            <div class="diagram">
+                <pre class="mermaid">
+sequenceDiagram
+    participant Alice as Alice<br/>(Server 1)
+    participant S1 as Server 1<br/>WebSocket
+    participant K as Kafka<br/>chat.unicast
+    participant S2 as Server 2<br/>WebSocket
+    participant Bob as Bob<br/>(Server 2)
+
+    Alice->>S1: Send UNICAST to Bob
+    Note over S1: Extract target: Bob's userId
+    S1->>S1: Check if Bob is local
+    Note over S1: Bob not on this server
+    S1->>K: Publish to chat.unicast
+    Note over K: Store message in topic
+    K->>S1: Acknowledge
+    S1->>Alice: Confirmation (delivered locally)
+    
+    Note over S2: Kafka Consumer listening
+    K->>S2: Deliver message
+    S2->>S2: Check if Bob is local
+    Note over S2: Bob IS on this server!
+    S2->>Bob: Send via WebSocket
+    Bob->>Bob: Display message
+                </pre>
+            </div>
+
+            <h4>Detailed Steps:</h4>
+            <div class="flow-step" data-step="1">
+                <strong>Client Sends:</strong><br>
+                <code>{"type":"UNICAST","roomId":"+918765432109","senderId":"+919876543210","senderUsername":"Alice","content":"Hello Bob!"}</code>
+            </div>
+
+            <div class="flow-step" data-step="2">
+                <strong>Server 1 Processing:</strong><br>
+                - ChatWebSocketHandler receives message<br>
+                - Calls handleUnicastMessage()<br>
+                - Sets serverId = "server-1"<br>
+                - Sets timestamp = now()
+            </div>
+
+            <div class="flow-step" data-step="3">
+                <strong>Local Check:</strong><br>
+                - Look up userId "+918765432109" in userSessions map<br>
+                - NOT FOUND (Bob is on Server 2)
+            </div>
+
+            <div class="flow-step" data-step="4">
+                <strong>ChatService.sendMessage():</strong><br>
+                - Save to MySQL messages table<br>
+                - Call strategy.route(message)
+            </div>
+
+            <div class="flow-step" data-step="5">
+                <strong>UnicastStrategy.route():</strong><br>
+                - Save to Redis inbox: <code>user:inbox:+918765432109</code><br>
+                - Call KafkaProducerService.publishUnicast()
+            </div>
+
+            <div class="flow-step" data-step="6">
+                <strong>Kafka Producer:</strong><br>
+                - Serialize message to JSON<br>
+                - Send to topic "chat.unicast"<br>
+                - Wait for acknowledgment
+            </div>
+
+            <div class="flow-step" data-step="7">
+                <strong>Kafka Consumer (Server 2):</strong><br>
+                - @KafkaListener receives message<br>
+                - consumeUnicast() called<br>
+                - Skip if serverId == "server-1" (already delivered locally)<br>
+                - Extract target userId from message.roomId
+            </div>
+
+            <div class="flow-step" data-step="8">
+                <strong>Server 2 Check:</strong><br>
+                - Look up userId "+918765432109" in userSessions map<br>
+                - FOUND! Bob is connected to Server 2
+            </div>
+
+            <div class="flow-step" data-step="9">
+                <strong>Deliver to Bob:</strong><br>
+                - Get WebSocketSession for Bob<br>
+                - Serialize message to JSON<br>
+                - Send via WebSocket<br>
+                - Bob's browser receives and displays
+            </div>
+
+            <h3>Flow 2: MULTICAST Message (Room)</h3>
+
+            <div class="diagram">
+                <pre class="mermaid">
+sequenceDiagram
+    participant Alice as Alice<br/>(Server 1)
+    participant S1 as Server 1
+    participant K as Kafka<br/>chat.multicast
+    participant S2 as Server 2
+    participant Bob as Bob<br/>(Server 2)
+    participant Charlie as Charlie<br/>(Server 1)
+
+    Alice->>S1: Send MULTICAST to Room-123
+    Note over S1: Get room members
+    S1->>S1: Find local members
+    S1->>Charlie: Send locally (same server)
+    S1->>K: Publish to chat.multicast
+    K->>S2: Deliver to all servers
+    S2->>S2: Get room members
+    S2->>S2: Find local members
+    S2->>Bob: Send to Bob (on this server)
+                </pre>
+            </div>
+
+            <h4>Key Difference from UNICAST:</h4>
+            <ul style="margin-left: 40px;">
+                <li>Queries <code>room_members</code> table to get all members</li>
+                <li>Delivers to ALL local members on each server</li>
+                <li>Each server independently filters and delivers</li>
+            </ul>
+
+            <h3>Flow 3: BROADCAST Message (Global)</h3>
+
+            <div class="diagram">
+                <pre class="mermaid">
+sequenceDiagram
+    participant Alice as Alice<br/>(Server 1)
+    participant S1 as Server 1
+    participant K as Kafka<br/>chat.broadcast
+    participant S2 as Server 2
+    participant All as All Connected<br/>Users
+
+    Alice->>S1: Send BROADCAST
+    Note over S1: Get all local sessions
+    S1->>All: Send to all on Server 1
+    S1->>K: Publish to chat.broadcast
+    K->>S2: Deliver to all servers
+    Note over S2: Get all local sessions
+    S2->>All: Send to all on Server 2
+                </pre>
+            </div>
+
+            <h4>Broadcast Behavior:</h4>
+            <ul style="margin-left: 40px;">
+                <li>No filtering - send to ALL connected sessions</li>
+                <li>Delivered locally first for low latency</li>
+                <li>Then propagated to other servers via Kafka</li>
+            </ul>
+
+            <h3>Flow 4: User Registration with Phone OTP</h3>
+
+            <div class="diagram">
+                <pre class="mermaid">
+sequenceDiagram
+    participant Client
+    participant API as REST API
+    participant UserService
+    participant OTPService
+    participant Redis
+    participant MySQL
+
+    Client->>API: POST /api/auth/request-otp
+    Note over Client: {phone: "+919876543210"}
+    API->>UserService: requestOTP(phone)
+    UserService->>OTPService: generateOTP()
+    OTPService-->>UserService: 123456
+    UserService->>Redis: Store OTP (5 min TTL)
+    UserService-->>Client: OTP sent (in demo: logged)
+    
+    Client->>API: POST /api/auth/verify-otp
+    Note over Client: {phone, otp: "123456", username}
+    API->>UserService: verifyOTP(phone, otp)
+    UserService->>Redis: Get stored OTP
+    Redis-->>UserService: 123456
+    UserService->>UserService: Compare OTPs
+    UserService->>MySQL: Create/Update User
+    MySQL-->>UserService: User saved
+    UserService->>Redis: Mark user online
+    UserService-->>Client: JWT Token + User details
+                </pre>
+            </div>
+
+            <h3>Flow 5: Horizontal Scaling (Adding Server 3)</h3>
+
+            <div class="info-box">
+                <h4>🚀 Zero-Downtime Scaling</h4>
+                <p>New servers can be added without affecting existing connections!</p>
+            </div>
+
+            <ol style="margin-left: 40px; margin-top: 10px;">
+                <li><strong>Deploy Server 3:</strong>
+                    <pre><code>docker-compose up --scale chat-app=3</code></pre>
+                </li>
+                <li><strong>Automatic Kafka Subscription:</strong>
+                    <ul>
+                        <li>Server 3 starts and subscribes to all 3 Kafka topics</li>
+                        <li>Gets unique consumer group ID: <code>server-3</code></li>
+                    </ul>
+                </li>
+                <li><strong>HAProxy Registration:</strong>
+                    <ul>
+                        <li>Add server to haproxy.cfg</li>
+                        <li>Reload HAProxy config</li>
+                        <li>New connections distributed to Server 3</li>
+                    </ul>
+                </li>
+                <li><strong>Immediate Participation:</strong>
+                    <ul>
+                        <li>Server 3 receives all messages from Kafka</li>
+                        <li>Delivers to locally connected users</li>
+                        <li>Publishes messages to Kafka for distribution</li>
+                    </ul>
+                </li>
+            </ol>
+        </section>
+
+        <!-- CONFIGURATION GUIDE -->
+        <section id="configuration" class="section">
+            <h2>⚙️ Configuration & Setup</h2>
+
+            <h3>Database Connection from External Tools (IntelliJ, MySQL Workbench, etc.)</h3>
+
+            <div class="info-box">
+                <h4>📍 Connection Settings</h4>
+                <p><strong>Important:</strong> Use port <code>3307</code> when connecting from your host machine!</p>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Setting</th>
+                        <th>Value</th>
+                        <th>Notes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Host</strong></td>
+                        <td><code>127.0.0.1</code></td>
+                        <td>Use IP address, not "localhost"</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Port</strong></td>
+                        <td><code>3307</code></td>
+                        <td>⚠️ Changed from default 3306 to avoid local MySQL conflicts</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Username</strong></td>
+                        <td><code>chatuser</code> or <code>root</code></td>
+                        <td>Both are configured for external access</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Password</strong></td>
+                        <td><code>chatpass</code> or <code>root</code></td>
+                        <td>Respectively</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Database</strong></td>
+                        <td><code>chat</code></td>
+                        <td>Auto-created by mysql-init.sql</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h4>Why Port 3307?</h4>
+            <div class="warning-box">
+                <p><strong>Problem:</strong> Many developers have local MySQL installations running on the default port 3306</p>
+                <p><strong>Solution:</strong> Docker MySQL is exposed on port 3307 to avoid conflicts</p>
+                <p><strong>Internal vs External:</strong></p>
+                <ul>
+                    <li>Docker containers (chat-app-1, chat-app-2) connect to <code>mysql:3306</code> (internal Docker network)</li>
+                    <li>Host machine (IntelliJ, MySQL Workbench) connects to <code>127.0.0.1:3307</code> (port forwarding)</li>
+                </ul>
+            </div>
+
+            <h3>Database Initialization</h3>
+
+            <div class="success-box">
+                <h4>✅ Automatic Setup: mysql-init.sql</h4>
+                <p>The <code>mysql-init.sql</code> file automatically runs when MySQL container starts for the first time</p>
+            </div>
+
+            <h4>What mysql-init.sql Does:</h4>
+            <ol style="margin-left: 40px; margin-top: 10px;">
+                <li><strong>Creates Database:</strong> <code>CREATE DATABASE IF NOT EXISTS chat</code></li>
+                <li><strong>Creates Users with Multiple Host Patterns:</strong>
+                    <ul>
+                        <li><code>root@'%'</code> - Can connect from any host</li>
+                        <li><code>root@'localhost'</code> - Unix socket connections</li>
+                        <li><code>root@'127.0.0.1'</code> - TCP/IP localhost connections</li>
+                        <li>Same pattern for <code>chatuser</code></li>
+                    </ul>
+                </li>
+                <li><strong>Sets Authentication Plugin:</strong> All users use <code>mysql_native_password</code> for maximum compatibility with JDBC drivers</li>
+                <li><strong>Grants Privileges:</strong> 
+                    <ul>
+                        <li><code>root</code> users get ALL PRIVILEGES ON *.*</li>
+                        <li><code>chatuser</code> gets ALL PRIVILEGES ON chat.* (database-specific)</li>
+                    </ul>
+                </li>
+            </ol>
+
+            <h4>Testing Database Connection:</h4>
+            <pre><code># From PowerShell/Terminal (if MySQL client installed)
+mysql -h 127.0.0.1 -P 3307 -u chatuser -p
+# Enter password: chatpass
+
+# From Docker (internal access)
+docker exec -it chat-mysql mysql -u root -p
+# Enter password: root
+
+# List tables
+USE chat;
+SHOW TABLES;</code></pre>
+
+            <h3>Environment Variables</h3>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Variable</th>
+                        <th>Default</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>DB_HOST</code></td>
+                        <td>localhost (dev)<br/>mysql (docker)</td>
+                        <td>Database host address</td>
+                    </tr>
+                    <tr>
+                        <td><code>DB_PORT</code></td>
+                        <td>3307 (dev)<br/>3306 (docker)</td>
+                        <td>Database port</td>
+                    </tr>
+                    <tr>
+                        <td><code>DB_USER</code></td>
+                        <td>root</td>
+                        <td>Database username</td>
+                    </tr>
+                    <tr>
+                        <td><code>DB_PASSWORD</code></td>
+                        <td>root</td>
+                        <td>Database password</td>
+                    </tr>
+                    <tr>
+                        <td><code>SPRING_PROFILES_ACTIVE</code></td>
+                        <td>docker</td>
+                        <td>Loads application-docker.yml</td>
+                    </tr>
+                    <tr>
+                        <td><code>APP_SERVER_ID</code></td>
+                        <td>server-1, server-2, etc.</td>
+                        <td>Unique identifier for Kafka consumer groups</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- TESTING GUIDE -->
+        <section id="testing" class="section">
+            <h2>🧪 Functional Testing Guide</h2>
+
+            <h3>Prerequisites</h3>
+            <div class="info-box">
+                <h4>✅ Ensure All Services are Running</h4>
+                <pre><code>docker ps</code></pre>
+                <p>Expected: 7 containers (haproxy, chat-app-1, chat-app-2, kafka, zookeeper, mysql, redis)</p>
+            </div>
+
+            <h3>Testing Tools</h3>
+            <ul style="margin-left: 40px;">
+                <li><strong>Frontend Chat App:</strong> <code>file:///D:/KAnsS/DEMO/distributed-chat-application/chat-app.html</code></li>
+                <li><strong>Swagger UI:</strong> <a href="http://localhost:8080/swagger-ui.html">http://localhost:8080/swagger-ui.html</a></li>
+                <li><strong>HAProxy Stats:</strong> <a href="http://localhost:8404/stats">http://localhost:8404/stats</a></li>
+                <li><strong>Database Client:</strong> IntelliJ DataGrip, MySQL Workbench (connect to <code>127.0.0.1:3307</code>)</li>
+                <li><strong>Postman Collection:</strong> (export available)</li>
+            </ul>
+
+            <h3>Test Flow 1: User Registration & Authentication</h3>
+
+            <div class="endpoint-box">
+                <span class="method post">POST</span>
+                <code>/api/auth/request-otp</code>
+                <p><strong>Purpose:</strong> Request OTP for phone number</p>
+            </div>
+
+            <pre><code>curl -X POST http://localhost:8080/api/auth/request-otp \
+  -H "Content-Type: application/json" \
+  -d '{
+    "phoneNumber": "+919876543210"
+  }'</code></pre>
+
+            <div class="success-box">
+                <h4>✅ Expected Response:</h4>
+                <pre><code>{
+  "success": true,
+  "message": "OTP sent successfully",
+  "otp": "123456"  // Only in demo mode
+}</code></pre>
+            </div>
+
+            <div class="endpoint-box">
+                <span class="method post">POST</span>
+                <code>/api/auth/verify-otp</code>
+                <p><strong>Purpose:</strong> Verify OTP and create/login user</p>
+            </div>
+
+            <pre><code>curl -X POST http://localhost:8080/api/auth/verify-otp \
+  -H "Content-Type: application/json" \
+  -d '{
+    "phoneNumber": "+919876543210",
+    "otp": "123456",
+    "username": "Alice"
+  }'</code></pre>
+
+            <div class="success-box">
+                <h4>✅ Expected Response:</h4>
+                <pre><code>{
+  "id": "uuid-here",
+  "phoneNumber": "+919876543210",
+  "username": "Alice",
+  "isOnline": false,
+  "createdAt": "2026-01-11T03:00:00"
+}</code></pre>
+            </div>
+
+            <h3>Test Flow 2: Room Management</h3>
+
+            <div class="endpoint-box">
+                <span class="method post">POST</span>
+                <code>/api/chat/rooms</code>
+                <p><strong>Purpose:</strong> Create a new chat room</p>
+            </div>
+
+            <pre><code>curl -X POST http://localhost:8080/api/chat/rooms \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Tech Discussion",
+    "type": "PUBLIC"
+  }'</code></pre>
+
+            <div class="endpoint-box">
+                <span class="method post">POST</span>
+                <code>/api/chat/rooms/{roomId}/join</code>
+                <p><strong>Purpose:</strong> Join a room</p>
+            </div>
+
+            <pre><code>curl -X POST http://localhost:8080/api/chat/rooms/5e451f40-dc76-4391-be12-efa36afddf82/join \
+  -H "Content-Type: application/json" \
+  -d '{
+    "userId": "+919876543210"
+  }'</code></pre>
+
+            <div class="endpoint-box">
+                <span class="method get">GET</span>
+                <code>/api/chat/rooms</code>
+                <p><strong>Purpose:</strong> List all rooms</p>
+            </div>
+
+            <h3>Test Flow 3: Frontend Chat Application (Recommended)</h3>
+
+            <div class="success-box">
+                <h4>✅ Full-Featured Chat UI</h4>
+                <p>Use the production-ready chat application for realistic testing</p>
+            </div>
+
+            <h4>Step 1: Open Chat Application</h4>
+            <p>Open <code>chat-app.html</code> in 2 browser windows/tabs (side-by-side)</p>
+            <pre><code>file:///D:/KAnsS/DEMO/distributed-chat-application/chat-app.html</code></pre>
+
+            <h4>Step 2: Login as User 1 (Amit)</h4>
+            <div class="flow-step" data-step="1">
+                <strong>Left Window (Amit):</strong><br>
+                1. Enter Phone: <code>+919632064441</code><br>
+                2. Enter Username: <code>Amit</code><br>
+                3. Click "Send OTP"<br>
+                4. Check Docker logs for OTP: <code>docker logs chat-app-1 --tail 20 | Select-String "OTP"</code><br>
+                5. Enter OTP and click "Verify & Login"<br>
+                6. Should see chat interface with Room Chat / Direct / Broadcast tabs
+            </div>
+
+            <h4>Step 3: Login as User 2 (Maa)</h4>
+            <div class="flow-step" data-step="2">
+                <strong>Right Window (Maa):</strong><br>
+                1. Enter Phone: <code>+918085715271</code><br>
+                2. Enter Username: <code>Maa</code><br>
+                3. Click "Send OTP" and get OTP from logs<br>
+                4. Enter OTP and click "Verify & Login"
+            </div>
+
+            <h4>Step 4: Test Room Chat (MULTICAST)</h4>
+            <div class="flow-step" data-step="3">
+                <strong>Amit's Window:</strong><br>
+                1. Click "Room Chat" tab<br>
+                2. Click "+ Create Room"<br>
+                3. Room Name: "Course Discussion", Description: "Course finalisation"<br>
+                4. Click "Create Room"<br>
+                5. Room appears in list, click to select<br>
+                6. Type message: "Hello everyone!"<br>
+                7. Click Send<br><br>
+                <strong>Maa's Window:</strong><br>
+                1. Click "Room Chat" tab<br>
+                2. Should see "Course Discussion" in room list<br>
+                3. Click on room to join<br>
+                4. Should see Amit's message "Hello everyone!"<br>
+                5. Reply: "Hi Amit!"<br>
+                6. Both users see all messages in the room
+            </div>
+
+            <h4>Step 5: Test Direct Messages (UNICAST)</h4>
+            <div class="flow-step" data-step="4">
+                <strong>Amit's Window:</strong><br>
+                1. Click "Direct" tab<br>
+                2. Click "+ New Direct Message"<br>
+                3. Enter Maa's phone: <code>+918085715271</code><br>
+                4. Type message: "Hi Maa, private message!"<br>
+                5. Click Send<br><br>
+                <strong>Maa's Window:</strong><br>
+                1. Click "Direct" tab<br>
+                2. Should automatically see "Amit" in conversation list with unread badge<br>
+                3. Click on Amit's name<br>
+                4. Should see the private message<br>
+                5. Reply: "Hi Amit, got your message!"<br><br>
+                <strong>Verify:</strong> Conversation list shows last message and updates in real-time
+            </div>
+
+            <h4>Step 6: Test Broadcast</h4>
+            <div class="flow-step" data-step="5">
+                <strong>Amit's Window:</strong><br>
+                1. Click "Broadcast" tab<br>
+                2. Type message: "Important announcement to everyone!"<br>
+                3. Click Send<br><br>
+                <strong>Verify:</strong><br>
+                - Maa receives the broadcast message (even if in different tab/view)<br>
+                - Any other connected users also receive it
+            </div>
+
+            <h4>Step 7: Test Message Deletion</h4>
+            <div class="flow-step" data-step="6">
+                <strong>Either Window:</strong><br>
+                1. Hover over your own message<br>
+                2. Click the red '✕' button<br>
+                3. Message should be deleted from view<br>
+                4. Backend deletes from database via DELETE /api/chat/messages/{id}
+            </div>
+
+            <h3>Test Flow 4: WebSocket Messaging (Legacy)</h3>
+
+            <h4>Step 1: Open WebSocket Test Client</h4>
+            <p>Open <code>websocket-test.html</code> in 2 browser windows (side-by-side)</p>
+
+            <h4>Step 2: Connect Alice to Server 1</h4>
+            <div class="flow-step" data-step="1">
+                <strong>Left Window (Alice)</strong><br>
+                URL: <code>ws://localhost:8080/ws/chat?userId=+919876543210</code><br>
+                Click "Connect to Server 1"<br>
+                Expected: "Connected to server on port 8080" (green)
+            </div>
+
+            <h4>Step 3: Connect Bob to Server 2</h4>
+            <div class="flow-step" data-step="2">
+                <strong>Right Window (Bob)</strong><br>
+                URL: <code>ws://localhost:8081/ws/chat?userId=+918765432109</code><br>
+                Click "Connect to Server 2"<br>
+                Expected: "Connected to server on port 8081" (green)
+            </div>
+
+            <h4>Step 4: Test UNICAST (Alice → Bob)</h4>
+            <div class="flow-step" data-step="3">
+                <strong>Alice's Window:</strong><br>
+                - Select "UNICAST (1-to-1)"<br>
+                - Target: <code>+918765432109</code> (Bob's phone)<br>
+                - Message: "Hello Bob from Alice!"<br>
+                - Click "Send"<br><br>
+                <strong>Verify:</strong><br>
+                - Alice sees: "SENT: [UNICAST] Hello Bob from Alice!"<br>
+                - Bob sees: "RECEIVED: [UNICAST] From: Alice - Hello Bob from Alice!"
+            </div>
+
+            <h4>Step 5: Test MULTICAST (Room Chat)</h4>
+            <div class="flow-step" data-step="4">
+                <strong>Both Windows:</strong><br>
+                - Ensure both are in same room: <code>5e451f40-dc76-4391-be12-efa36afddf82</code><br>
+                - Select "MULTICAST (Room)"<br>
+                - Alice sends: "Hello everyone in the room!"<br><br>
+                <strong>Verify:</strong><br>
+                - Alice sees: "SENT: [MULTICAST] Hello everyone in the room!"<br>
+                - Bob sees: "RECEIVED: [MULTICAST] From: Alice - Hello everyone in the room!"
+            </div>
+
+            <h4>Step 6: Test BROADCAST (Global)</h4>
+            <div class="flow-step" data-step="5">
+                <strong>Alice's Window:</strong><br>
+                - Select "BROADCAST (All)"<br>
+                - Message: "Hello everyone on all servers!"<br>
+                - Click "Send"<br><br>
+                <strong>Verify:</strong><br>
+                - Alice sees: "SENT: [BROADCAST] Hello everyone on all servers!"<br>
+                - Bob sees: "RECEIVED: [BROADCAST] From: Alice - Hello everyone on all servers!"<br>
+                - ALL connected users receive the message
+            </div>
+
+            <h3>Test Flow 5: Load Balancer Verification</h3>
+
+            <div class="info-box">
+                <h4>🔍 Check HAProxy Stats Dashboard</h4>
+                <p>Open: <a href="http://localhost:8404/stats">http://localhost:8404/stats</a></p>
+            </div>
+
+            <h4>What to Verify:</h4>
+            <ol style="margin-left: 40px; margin-top: 10px;">
+                <li><strong>Server Status:</strong> Both chat-app-1 and chat-app-2 should show "UP" in green</li>
+                <li><strong>Session Distribution:</strong> Connect 10 clients via HAProxy (port 80), verify ~50-50 distribution</li>
+                <li><strong>Health Checks:</strong> Should show successful checks every 5 seconds</li>
+                <li><strong>Failover Test:</strong>
+                    <pre><code>docker stop chat-app-1</code></pre>
+                    <ul>
+                        <li>HAProxy stats shows chat-app-1 as "DOWN" in red</li>
+                        <li>New connections go only to chat-app-2</li>
+                        <li>Existing connections on chat-app-1 are closed</li>
+                    </ul>
+                </li>
+            </ol>
+
+            <h3>Test Flow 6: Kafka Message Inspection</h3>
+
+            <h4>Monitor Kafka Topics:</h4>
+            <pre><code># List all topics
+docker exec chat-kafka kafka-topics --list --bootstrap-server localhost:9092
+
+# Watch UNICAST messages
+docker exec chat-kafka kafka-console-consumer \
+  --bootstrap-server localhost:9092 \
+  --topic chat.unicast \
+  --from-beginning
+
+# Watch BROADCAST messages
+docker exec chat-kafka kafka-console-consumer \
+  --bootstrap-server localhost:9092 \
+  --topic chat.broadcast \
+  --from-beginning</code></pre>
+
+            <h4>Expected Output:</h4>
+            <pre><code>{"roomId":"+918765432109","senderId":"+919876543210","senderUsername":"Alice","content":"Hello Bob!","type":"UNICAST","timestamp":"2026-01-11T03:00:00","serverId":"server-1"}</code></pre>
+
+            <h3>Test Flow 7: Redis Cache Inspection</h3>
+
+            <pre><code># Connect to Redis
+docker exec -it chat-redis redis-cli
+
+# Check user inbox
+LRANGE user:inbox:+918765432109 0 -1
+
+# Check online users
+KEYS user:online:*
+
+# Check message count
+LLEN user:inbox:+918765432109</code></pre>
+
+            <h3>Complete Test Checklist</h3>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Test Case</th>
+                        <th>Expected Result</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>User Registration (OTP)</td>
+                        <td>User created in MySQL, OTP logged</td>
+                        <td>☐</td>
+                    </tr>
+                    <tr>
+                        <td>Room Creation</td>
+                        <td>Room saved, returns room ID</td>
+                        <td>☐</td>
+                    </tr>
+                    <tr>
+                        <td>Join Room</td>
+                        <td>User added to room_members table</td>
+                        <td>☐</td>
+                    </tr>
+                    <tr>
+                        <td>WebSocket Connection</td>
+                        <td>Welcome message received, user marked online</td>
+                        <td>☐</td>
+                    </tr>
+                    <tr>
+                        <td>UNICAST (Same Server)</td>
+                        <td>Message delivered locally</td>
+                        <td>☐</td>
+                    </tr>
+                    <tr>
+                        <td>UNICAST (Cross Server)</td>
+                        <td>Message routed via Kafka</td>
+                        <td>☐</td>
+                    </tr>
+                    <tr>
+                        <td>MULTICAST (Room)</td>
+                        <td>All room members receive message</td>
+                        <td>☐</td>
+                    </tr>
+                    <tr>
+                        <td>BROADCAST (Global)</td>
+                        <td>All connected users receive message</td>
+                        <td>☐</td>
+                    </tr>
+                    <tr>
+                        <td>Load Balancing</td>
+                        <td>Connections distributed evenly</td>
+                        <td>☐</td>
+                    </tr>
+                    <tr>
+                        <td>Failover</td>
+                        <td>Traffic redirects to healthy servers</td>
+                        <td>☐</td>
+                    </tr>
+                    <tr>
+                        <td>Kafka Persistence</td>
+                        <td>Messages visible in Kafka topics</td>
+                        <td>☐</td>
+                    </tr>
+                    <tr>
+                        <td>Redis Caching</td>
+                        <td>User status cached correctly</td>
+                        <td>☐</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>Postman Collection</h3>
+
+            <div class="success-box">
+                <h4>📦 Import Postman Collection</h4>
+                <p>Access Swagger UI at <a href="http://localhost:8080/swagger-ui.html">http://localhost:8080/swagger-ui.html</a></p>
+                <p>Click "Export" → "OpenAPI 3.0 JSON" → Import into Postman</p>
+            </div>
+
+            <h4>Key Endpoints:</h4>
+            <ul style="margin-left: 40px;">
+                <li><code>POST /api/auth/request-otp</code> - Request OTP</li>
+                <li><code>POST /api/auth/verify-otp</code> - Verify OTP & Login</li>
+                <li><code>GET /api/auth/users</code> - List all users</li>
+                <li><code>POST /api/chat/rooms</code> - Create room</li>
+                <li><code>GET /api/chat/rooms</code> - List rooms</li>
+                <li><code>POST /api/chat/rooms/{roomId}/join</code> - Join room</li>
+                <li><code>GET /api/chat/rooms/{roomId}/members</code> - Get room members</li>
+                <li><code>GET /actuator/health</code> - Health check</li>
+            </ul>
+        </section>
+
+        <!-- CHANGELOG -->
+        <section id="changelog" class="section">
+            <h2>📝 Changelog & Recent Updates</h2>
+
+            <div class="success-box">
+                <h4>✅ Version 2.0 - January 2026</h4>
+                <p><strong>Major updates for Spring Boot 4.0 compatibility and enhanced functionality</strong></p>
+            </div>
+
+            <h3>1. Custom Kafka Serializers (Breaking Change Fix)</h3>
+            <div class="flow-step" data-step="1">
+                <strong>Issue:</strong> Spring Kafka's <code>JsonSerializer</code> and <code>JsonDeserializer</code> deprecated in Spring Boot 4.0<br>
+                <strong>Solution:</strong> Implemented custom serializers:<br>
+                - <code>KafkaJsonSerializer.java</code> - Uses Jackson ObjectMapper for JSON serialization<br>
+                - <code>KafkaJsonDeserializer.java</code> - Type-safe JSON deserialization<br>
+                - Both are Java records for immutability<br>
+                <strong>Files Modified:</strong> KafkaConfig.java, new files in com.techbrain.chat.cofig
+            </div>
+
+            <h3>2. MySQL Port Change (3306 → 3307)</h3>
+            <div class="flow-step" data-step="2">
+                <strong>Issue:</strong> Conflict with local MySQL installations on developer machines<br>
+                <strong>Solution:</strong> Changed external port mapping to 3307<br>
+                - External access (host): <code>127.0.0.1:3307</code><br>
+                - Internal access (Docker): <code>mysql:3306</code><br>
+                <strong>Files Modified:</strong> docker-compose.yml, DBConfig.java
+            </div>
+
+            <h3>3. Database Auto-Initialization</h3>
+            <div class="flow-step" data-step="3">
+                <strong>Feature:</strong> Automatic database and user setup<br>
+                <strong>Implementation:</strong> Created <code>mysql-init.sql</code> script<br>
+                - Creates users: root@%, root@localhost, root@127.0.0.1, chatuser@% (all patterns)<br>
+                - Sets authentication plugin: <code>mysql_native_password</code> for JDBC compatibility<br>
+                - Grants appropriate privileges<br>
+                - Auto-runs on first container startup<br>
+                <strong>Files Added:</strong> mysql-init.sql, mounted in docker-compose.yml
+            </div>
+
+            <h3>4. Message DTO Compatibility Fix</h3>
+            <div class="flow-step" data-step="4">
+                <strong>Issue:</strong> Frontend sending extra fields causing "Unrecognized field" errors<br>
+                <strong>Solution:</strong> Added <code>@JsonIgnoreProperties(ignoreUnknown = true)</code> to Message.java<br>
+                - Allows frontend to include additional fields (like 'id' for deletion)<br>
+                - Maintains backward compatibility<br>
+                <strong>Files Modified:</strong> Message.java (com.techbrain.chat.to)
+            </div>
+
+            <h3>5. Full-Featured Chat Frontend</h3>
+            <div class="flow-step" data-step="5">
+                <strong>Feature:</strong> Production-ready web chat interface<br>
+                <strong>Capabilities:</strong><br>
+                - Phone-based OTP authentication<br>
+                - Room Chat with room creation/search<br>
+                - Direct Messages with conversation list and unread counts<br>
+                - Broadcast messaging to all users<br>
+                - Message deletion (own messages only)<br>
+                - Real-time updates and auto-reconnection<br>
+                - Responsive UI with modern design<br>
+                <strong>Files:</strong> chat-app.html (1644 lines)
+            </div>
+
+            <h3>6. Database Configuration Improvements</h3>
+            <div class="flow-step" data-step="6">
+                <strong>Changes:</strong><br>
+                - Fixed Hibernate property key: <code>hibernate.hbm2ddl.auto</code> (was incorrectly named)<br>
+                - Added <code>createDatabaseIfNotExist=true</code> to JDBC URL<br>
+                - Java-based JPA configuration in ChatDBConfiguration.java<br>
+                - Proper external connectivity from IntelliJ and other database tools<br>
+                <strong>Files Modified:</strong> ChatDBConfiguration.java, DBConfig.java
+            </div>
+
+            <h3>7. CORS Configuration</h3>
+            <div class="flow-step" data-step="7">
+                <strong>Feature:</strong> Enable frontend access from file:// and localhost<br>
+                <strong>Implementation:</strong> Created CorsConfig.java<br>
+                - Allows all origins with <code>allowedOriginPatterns("*")</code><br>
+                - Configured for /api/** and /ws/chat/** endpoints<br>
+                - Credentials support enabled<br>
+                <strong>Files Added:</strong> CorsConfig.java
+            </div>
+
+            <h3>Known Issues & Limitations</h3>
+            <div class="warning-box">
+                <ul>
+                    <li><strong>OTP Demo Mode:</strong> OTPs are logged to console, no real SMS integration (intentional for demo)</li>
+                    <li><strong>Single Kafka Partition:</strong> Limits horizontal scalability for extremely high throughput scenarios</li>
+                    <li><strong>No Authentication Token:</strong> WebSocket connections use userId in query param (should use JWT in production)</li>
+                    <li><strong>Message Deletion:</strong> Only removes from database, already-delivered messages remain in client UI</li>
+                </ul>
+            </div>
+
+            <h3>Future Enhancements</h3>
+            <div class="info-box">
+                <ul>
+                    <li>JWT-based authentication for WebSocket connections</li>
+                    <li>Real SMS integration with Twilio/AWS SNS</li>
+                    <li>Message read receipts and typing indicators</li>
+                    <li>File sharing and image uploads</li>
+                    <li>Push notifications for offline users</li>
+                    <li>Multi-partition Kafka topics with custom partitioning strategy</li>
+                    <li>End-to-end encryption for direct messages</li>
+                    <li>User presence (online/offline/away) with heartbeat</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- FOOTER -->
+        <footer style="text-align: center; padding: 40px 20px; color: #666;">
+            <p><strong>Distributed Chat Application</strong> - Built with Spring Boot, Kafka, Redis, MySQL & HAProxy</p>
+            <p>© 2026 TechBrain | Production-Ready Architecture</p>
+            <p style="font-size: 0.85em; margin-top: 10px;">Last Updated: January 18, 2026</p>
+        </footer>
+    </div>
+
+    <script>
+        mermaid.initialize({ 
+            startOnLoad: true,
+            theme: 'default',
+            securityLevel: 'loose',
+            flowchart: {
+                useMaxWidth: true,
+                htmlLabels: true,
+                curve: 'basis'
+            }
+        });
+    </script>
+</body>
+</html>
+
