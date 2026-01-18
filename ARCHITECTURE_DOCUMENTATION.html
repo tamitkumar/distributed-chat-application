@@ -109,11 +109,17 @@
         }
 
         .diagram {
-            background: #f9f9f9;
-            padding: 20px;
+            background: #ffffff;
+            padding: 30px;
             border-radius: 8px;
             margin: 20px 0;
             overflow-x: auto;
+            border: 2px solid #e0e0e0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .diagram .mermaid {
+            background: #ffffff;
         }
 
         .component-box {
@@ -206,6 +212,13 @@
             color: #f8f8f2;
             padding: 0;
         }
+        
+        pre.mermaid {
+            background: #ffffff !important;
+            color: #000000 !important;
+            padding: 20px;
+            min-height: 300px;
+        }
 
         .flow-step {
             background: white;
@@ -295,6 +308,45 @@
         .method.delete {
             background: #f44336;
             color: white;
+        }
+
+        /* Mermaid diagram text styling */
+        .mermaid text {
+            font-family: 'Segoe UI', Arial, sans-serif !important;
+            font-size: 14px !important;
+            fill: #000000 !important;
+            font-weight: 500 !important;
+        }
+        
+        .mermaid .node rect,
+        .mermaid .node circle,
+        .mermaid .node polygon {
+            stroke: #1976D2 !important;
+            stroke-width: 2px !important;
+            fill: #E3F2FD !important;
+        }
+        
+        .mermaid .edgeLabel {
+            background-color: #ffffff !important;
+            padding: 5px !important;
+            border-radius: 3px !important;
+        }
+        
+        .mermaid .cluster rect {
+            fill: #FFFDE7 !important;
+            stroke: #FBC02D !important;
+            stroke-width: 2px !important;
+        }
+        
+        .mermaid .actor {
+            fill: #E3F2FD !important;
+            stroke: #1976D2 !important;
+            stroke-width: 2px !important;
+        }
+        
+        .mermaid .note {
+            fill: #FFF3E0 !important;
+            stroke: #FF9800 !important;
         }
 
         @media print {
@@ -396,36 +448,36 @@
             <div class="diagram">
                 <pre class="mermaid">
 graph TB
-    subgraph "Client Layer"
-        C1[Browser Client 1<br/>Alice]
-        C2[Browser Client 2<br/>Bob]
-        C3[Browser Client N<br/>Others]
+    subgraph ClientLayer["Client Layer"]
+        C1["Browser Client 1 Alice"]
+        C2["Browser Client 2 Bob"]
+        C3["Browser Client N Others"]
     end
 
-    subgraph "Load Balancer"
-        HAP[HAProxy<br/>Port 80<br/>Round Robin + Health Check]
+    subgraph LoadBalancer["Load Balancer"]
+        HAP["HAProxy Port 80 Round Robin + Health Check"]
     end
 
-    subgraph "Application Layer"
-        S1[Chat Server 1<br/>Port 8080<br/>WebSocket Handler]
-        S2[Chat Server 2<br/>Port 8081<br/>WebSocket Handler]
-        S3[Chat Server N<br/>Port 808N<br/>WebSocket Handler]
+    subgraph ApplicationLayer["Application Layer"]
+        S1["Chat Server 1 Port 8080 WebSocket Handler"]
+        S2["Chat Server 2 Port 8081 WebSocket Handler"]
+        S3["Chat Server N Port 808N WebSocket Handler"]
     end
 
-    subgraph "Message Broker"
-        K1[Kafka Broker<br/>Port 9092]
-        K2[Kafka Topics:<br/>chat.unicast<br/>chat.multicast<br/>chat.broadcast]
-        ZK[Zookeeper<br/>Port 2181<br/>Coordination]
+    subgraph MessageBroker["Message Broker"]
+        K1["Kafka Broker Port 9092"]
+        K2["Kafka Topics: chat.unicast, chat.multicast, chat.broadcast"]
+        ZK["Zookeeper Port 2181 Coordination"]
     end
 
-    subgraph "Cache Layer"
-        R1[Redis<br/>Port 6379]
-        R2[User Sessions<br/>Online Status<br/>Message Inbox]
+    subgraph CacheLayer["Cache Layer"]
+        R1["Redis Port 6379"]
+        R2["User Sessions, Online Status, Message Inbox"]
     end
 
-    subgraph "Database Layer"
-        DB1[MySQL<br/>Port 3307 (external)<br/>Port 3306 (internal)]
-        DB2[Tables:<br/>users<br/>rooms<br/>room_members<br/>messages<br/>user_rooms]
+    subgraph DatabaseLayer["Database Layer"]
+        DB1["MySQL Port 3307 external, Port 3306 internal"]
+        DB2["Tables: users, rooms, room_members, messages, user_rooms"]
     end
 
     C1 -->|WebSocket| HAP
@@ -582,34 +634,34 @@ graph TB
             <div class="diagram">
                 <pre class="mermaid">
 graph TB
-    subgraph "Presentation Layer"
-        WS[WebSocket Handler<br/>ChatWebSocketHandler]
+    subgraph PresentationLayer["Presentation Layer"]
+        WS["WebSocket Handler - ChatWebSocketHandler"]
     end
 
-    subgraph "Service Layer"
-        CS[Chat Service<br/>Message Processing]
-        US[User Service<br/>Auth & Management]
-        RS[Room Service<br/>Room Operations]
-        KP[Kafka Producer<br/>Message Publishing]
-        KC[Kafka Consumer<br/>Message Receiving]
+    subgraph ServiceLayer["Service Layer"]
+        CS["Chat Service - Message Processing"]
+        US["User Service - Auth & Management"]
+        RS["Room Service - Room Operations"]
+        KP["Kafka Producer - Message Publishing"]
+        KC["Kafka Consumer - Message Receiving"]
     end
 
-    subgraph "Strategy Pattern"
-        UNI[Unicast Strategy]
-        MULTI[Multicast Strategy]
-        BROAD[Broadcast Strategy]
+    subgraph StrategyPattern["Strategy Pattern"]
+        UNI["Unicast Strategy"]
+        MULTI["Multicast Strategy"]
+        BROAD["Broadcast Strategy"]
     end
 
-    subgraph "Repository Layer"
-        MR[Message Repository]
-        UR[User Repository]
-        RR[Room Repository]
+    subgraph RepositoryLayer["Repository Layer"]
+        MR["Message Repository"]
+        UR["User Repository"]
+        RR["Room Repository"]
     end
 
-    subgraph "External Services"
-        KF[Kafka]
-        RD[Redis]
-        MY[MySQL]
+    subgraph ExternalServices["External Services"]
+        KF["Kafka"]
+        RD["Redis"]
+        MY["MySQL"]
     end
 
     WS -->|Receive Message| CS
@@ -659,54 +711,54 @@ classDiagram
     }
 
     class ChatService {
-        <<interface>>
-        +sendMessage(Message)
-        +getMessageHistory(roomId, limit)
-        +deleteMessage(messageId)
+        &lt;&lt;interface&gt;&gt;
+        +sendMessage()
+        +getMessageHistory()
+        +deleteMessage()
     }
 
     class ChatServiceImpl {
         -MessageRepository messageRepo
-        -Map~String,Strategy~ strategies
-        +sendMessage(Message)
-        +getMessageHistory(roomId, limit)
+        -Map strategies
+        +sendMessage()
+        +getMessageHistory()
     }
 
     class MessageRoutingStrategy {
-        <<interface>>
-        +route(Message)
+        &lt;&lt;interface&gt;&gt;
+        +route()
     }
 
     class UnicastStrategy {
         -KafkaProducerService kafka
         -StringRedisTemplate redis
-        +route(Message)
+        +route()
     }
 
     class MulticastStrategy {
         -KafkaProducerService kafka
         -RoomService roomService
-        +route(Message)
+        +route()
     }
 
     class BroadcastStrategy {
         -KafkaProducerService kafka
-        +route(Message)
+        +route()
     }
 
     class KafkaProducerService {
         -KafkaTemplate kafkaTemplate
-        +publishUnicast(userId, message)
-        +publishMulticast(roomId, message)
-        +publishBroadcast(message)
+        +publishUnicast()
+        +publishMulticast()
+        +publishBroadcast()
     }
 
     class KafkaConsumerService {
         -Map sessions
         -Map userSessions
-        +consumeUnicast(message)
-        +consumeMulticast(message)
-        +consumeBroadcast(message)
+        +consumeUnicast()
+        +consumeMulticast()
+        +consumeBroadcast()
     }
 
     ChatWebSocketHandler --> ChatService
@@ -734,8 +786,8 @@ erDiagram
     ROOMS ||--o{ MESSAGES : contains
 
     USERS {
-        varchar id PK
-        varchar phone_number UK
+        varchar id "PK"
+        varchar phone_number "UK"
         varchar username
         varchar password_hash
         boolean is_online
@@ -744,22 +796,22 @@ erDiagram
     }
 
     ROOMS {
-        varchar id PK
+        varchar id "PK"
         varchar name
         enum type
         datetime created_at
     }
 
     ROOM_MEMBERS {
-        varchar room_id FK
-        varchar user_id FK
+        varchar room_id "FK"
+        varchar user_id "FK"
         datetime joined_at
     }
 
     MESSAGES {
-        varchar id PK
-        varchar room_id FK
-        varchar sender_id FK
+        varchar id "PK"
+        varchar room_id "FK"
+        varchar sender_id "FK"
         varchar sender_username
         text content
         enum type
@@ -1073,11 +1125,11 @@ backend chat_servers
             <div class="diagram">
                 <pre class="mermaid">
 sequenceDiagram
-    participant Alice as Alice<br/>(Server 1)
-    participant S1 as Server 1<br/>WebSocket
-    participant K as Kafka<br/>chat.unicast
-    participant S2 as Server 2<br/>WebSocket
-    participant Bob as Bob<br/>(Server 2)
+    participant Alice as Alice (Server 1)
+    participant S1 as Server 1 WebSocket
+    participant K as Kafka chat.unicast
+    participant S2 as Server 2 WebSocket
+    participant Bob as Bob (Server 2)
 
     Alice->>S1: Send UNICAST to Bob
     Note over S1: Extract target: Bob's userId
@@ -1163,12 +1215,12 @@ sequenceDiagram
             <div class="diagram">
                 <pre class="mermaid">
 sequenceDiagram
-    participant Alice as Alice<br/>(Server 1)
+    participant Alice as Alice (Server 1)
     participant S1 as Server 1
-    participant K as Kafka<br/>chat.multicast
+    participant K as Kafka chat.multicast
     participant S2 as Server 2
-    participant Bob as Bob<br/>(Server 2)
-    participant Charlie as Charlie<br/>(Server 1)
+    participant Bob as Bob (Server 2)
+    participant Charlie as Charlie (Server 1)
 
     Alice->>S1: Send MULTICAST to Room-123
     Note over S1: Get room members
@@ -1194,11 +1246,11 @@ sequenceDiagram
             <div class="diagram">
                 <pre class="mermaid">
 sequenceDiagram
-    participant Alice as Alice<br/>(Server 1)
+    participant Alice as Alice (Server 1)
     participant S1 as Server 1
-    participant K as Kafka<br/>chat.broadcast
+    participant K as Kafka chat.broadcast
     participant S2 as Server 2
-    participant All as All Connected<br/>Users
+    participant All as All Connected Users
 
     Alice->>S1: Send BROADCAST
     Note over S1: Get all local sessions
@@ -1230,7 +1282,7 @@ sequenceDiagram
     participant MySQL
 
     Client->>API: POST /api/auth/request-otp
-    Note over Client: {phone: "+919876543210"}
+    Note over Client: phone number
     API->>UserService: requestOTP(phone)
     UserService->>OTPService: generateOTP()
     OTPService-->>UserService: 123456
@@ -1238,7 +1290,7 @@ sequenceDiagram
     UserService-->>Client: OTP sent (in demo: logged)
     
     Client->>API: POST /api/auth/verify-otp
-    Note over Client: {phone, otp: "123456", username}
+    Note over Client: phone, otp, username
     API->>UserService: verifyOTP(phone, otp)
     UserService->>Redis: Get stored OTP
     Redis-->>UserService: 123456
@@ -1942,12 +1994,64 @@ LLEN user:inbox:+918765432109</code></pre>
     <script>
         mermaid.initialize({ 
             startOnLoad: true,
-            theme: 'default',
+            theme: 'base',
             securityLevel: 'loose',
+            themeVariables: {
+                primaryColor: '#E3F2FD',
+                primaryTextColor: '#000000',
+                primaryBorderColor: '#1976D2',
+                lineColor: '#1976D2',
+                secondaryColor: '#FFF3E0',
+                tertiaryColor: '#E8F5E9',
+                background: '#ffffff',
+                mainBkg: '#E3F2FD',
+                secondBkg: '#FFF3E0',
+                tertiaryBkg: '#E8F5E9',
+                textColor: '#000000',
+                border1: '#1976D2',
+                border2: '#FF9800',
+                arrowheadColor: '#1976D2',
+                fontFamily: 'Segoe UI, Arial, sans-serif',
+                fontSize: '16px',
+                nodeBorder: '#1976D2',
+                clusterBkg: '#FFFDE7',
+                clusterBorder: '#FBC02D',
+                defaultLinkColor: '#1976D2',
+                titleColor: '#000000',
+                edgeLabelBackground: '#ffffff',
+                actorBorder: '#1976D2',
+                actorBkg: '#E3F2FD',
+                actorTextColor: '#000000',
+                actorLineColor: '#1976D2',
+                signalColor: '#000000',
+                signalTextColor: '#000000',
+                labelBoxBkgColor: '#E3F2FD',
+                labelBoxBorderColor: '#1976D2',
+                labelTextColor: '#000000',
+                loopTextColor: '#000000',
+                noteBorderColor: '#FF9800',
+                noteBkgColor: '#FFF3E0',
+                noteTextColor: '#000000',
+                activationBorderColor: '#1976D2',
+                activationBkgColor: '#BBDEFB',
+                sequenceNumberColor: '#ffffff'
+            },
             flowchart: {
                 useMaxWidth: true,
                 htmlLabels: true,
-                curve: 'basis'
+                curve: 'basis',
+                padding: 20
+            },
+            sequence: {
+                useMaxWidth: true,
+                wrap: true,
+                width: 200
+            },
+            class: {
+                useMaxWidth: true
+            },
+            er: {
+                useMaxWidth: true
             }
         });
     </script>
